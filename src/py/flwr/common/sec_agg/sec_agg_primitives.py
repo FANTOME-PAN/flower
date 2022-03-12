@@ -190,11 +190,11 @@ def pseudo_rand_gen(seed: bytes, num_range: int, dimensions_list: List[Tuple]) -
     output = []
     for dimension in dimensions_list:
         if len(dimension) == 0:
-            flat_arr = np.array([], dtype=int)
+            modified_arr = np.array([], dtype=int)
         else:
             flat_arr = np.array([random.randrange(0, num_range)
                                 for i in range(np.prod(dimension))])
-        modified_arr = np.reshape(flat_arr, dimension)
+            modified_arr = np.reshape(flat_arr, dimension)
         output.append(modified_arr)
     return output
 
