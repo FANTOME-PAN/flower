@@ -1,20 +1,17 @@
 import argparse
-from typing import Callable, Dict, Optional, Tuple
+from typing import Dict
 
-from logging import INFO
-
-from src.py.flwr.common.logger import log
-from src.py.flwr.server.grpc_server.grpc_server import start_insecure_grpc_server
+from flwr.common.logger import log
+from flwr.server.grpc_server.grpc_server import start_insecure_grpc_server
 
 import torch
 import torchvision
 
-import src.py.flwr as fl
+import flwr as fl
 import data_partition
-from model import MobileNet
 from collections import OrderedDict
 from utils import test
-from src.py.flwr.server.strategy import FedAvg
+from flwr.server.strategy import FedAvg
 import config as c
 
 DEFAULT_SERVER_ADDRESS = "localhost:8099"
