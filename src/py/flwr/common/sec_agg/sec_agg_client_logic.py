@@ -168,7 +168,7 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
     # Quantize weight update vector
     quantized_weights = sec_agg_primitives.quantize(
         weights, client.clipping_range, client.target_range)
-
+    log(INFO, "1111")
     # weights factor cannoot exceed maximum
     if weights_factor > client.max_weights_factor:
         weights_factor = client.max_weights_factor
@@ -178,7 +178,7 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
         quantized_weights, weights_factor)
     quantized_weights = sec_agg_primitives.factor_weights_combine(
         weights_factor, quantized_weights)
-
+    log(INFO, "2222")
     dimensions_list: List[Tuple] = [a.shape for a in quantized_weights]
 
     # add private mask
@@ -187,6 +187,7 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
     quantized_weights = sec_agg_primitives.weights_addition(
         quantized_weights, private_mask)
 
+    log(INFO, "3333")
     for client_id in available_clients:
         # add pairwise mask
         shared_key = sec_agg_primitives.generate_shared_key(
@@ -200,6 +201,7 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
             quantized_weights = sec_agg_primitives.weights_subtraction(
                 quantized_weights, pairwise_mask)
 
+    log(INFO, "4444")
     # Take mod of final weight update vector and return to server
     quantized_weights = sec_agg_primitives.weights_mod(
         quantized_weights, client.mod_range)

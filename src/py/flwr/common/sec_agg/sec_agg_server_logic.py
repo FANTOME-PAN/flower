@@ -247,7 +247,7 @@ def process_sec_agg_param_dict(sec_agg_param_dict: Dict[str, Scalar]) -> Dict[st
 
     # Maximum number of example trained set to 1000
     if 'max_weights_factor' not in sec_agg_param_dict:
-        sec_agg_param_dict['max_weights_factor'] = 1000
+        sec_agg_param_dict['max_weights_factor'] = 20000
 
     # Quantization parameters
     if 'clipping_range' not in sec_agg_param_dict:
