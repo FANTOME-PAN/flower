@@ -13,6 +13,7 @@ from collections import OrderedDict
 from utils import test
 from flwr.server.strategy import FedAvg
 from model import MobileNet
+from flwr.server.strategy.sec_agg_fedavg import SecAggFedAvg
 
 DEFAULT_SERVER_ADDRESS = "localhost:8099"
 
@@ -42,15 +43,17 @@ def start_server(exp_name=None,
     # Create client_manager, strategy, and server
     client_manager = fl.server.SimpleClientManager()
 
-    strategy = fl.server.strategy.FedAvg(
+    strategy = SecAggFedAvg(
         fraction_fit=sample_fraction,
         min_fit_clients=min_sample_size,
         min_eval_clients=min_sample_size,
         min_available_clients=min_num_clients,
         eval_fn=get_eval_fn(testset),
         on_fit_config_fn=generate_config(epochs, batch_size),
-        on_evaluate_config_fn=generate_config(epochs, batch_size)
-    )
+        on_evaluate_config_fn=generate_config(epochs, batch_size),
+        sec_agg_param_dict={"min_num": min_sample_size,
+                            "share_num": 3,
+                            "threshold": 2})
 
     server = fl.server.Server(client_manager=client_manager, strategy=strategy)
 
