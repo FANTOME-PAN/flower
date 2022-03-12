@@ -127,6 +127,7 @@ def sec_agg_fit_round(server, rnd: int
     ask_vectors_results_and_failures = ask_vectors(
         ask_vectors_clients, forward_packet_list_dict, client_instructions)
     ask_vectors_results = ask_vectors_results_and_failures[0]
+    log(INFO, f"gathered results: {len(ask_vectors_results)}")
     if len(ask_vectors_results) < sec_agg_param_dict['min_num']:
         raise Exception("Not enough available clients after ask vectors stage")
 
