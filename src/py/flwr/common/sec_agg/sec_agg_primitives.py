@@ -190,7 +190,10 @@ def pseudo_rand_gen(seed: bytes, num_range: int, dimensions_list: List[Tuple]) -
     random.seed(seed)
     output = []
     log(INFO, 'bbb')
+    cnt = 0
     for dimension in dimensions_list:
+        cnt += 1
+        log(INFO, f'item {cnt}: {dimension}')
         flat_arr = np.array([random.randrange(0, num_range)
                             for i in range(np.prod(dimension))])
         log(INFO, 'ccc')
