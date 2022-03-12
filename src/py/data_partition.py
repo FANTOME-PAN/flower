@@ -70,6 +70,6 @@ def load_local_partitioned_data(client_id, iid_fraction: float, num_partitions: 
     x_test, y_test = test_partitions[client_id]
     torch_partition_testset = PartitionedDataset(torch.Tensor(x_test), y_test)
     torch.save((torch_partition_trainset, torch_partition_testset),
-               f'partitions/cifar10_part{client_id}/{num_partitions}.pth')
+               f'partitions/cifar10_part{client_id}-{num_partitions}.pth')
     return torch_partition_trainset, torch_partition_testset
 
