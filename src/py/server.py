@@ -64,7 +64,7 @@ def start_server(exp_name=None,
 
     # Fit model
     print("Fitting the model...")
-    hist = server.fit(num_rounds=rounds)
+    hist = server.fit(num_rounds=rounds, sec_agg=0)
 
     # Write training history to file
     f = open(log_dict + exp_name, "w")
