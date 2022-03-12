@@ -16,6 +16,7 @@ from flwr.common import parameters_to_weights, weights_to_parameters
 from data_partition import load_local_partitioned_data, load_sample_data
 from model import MobileNet
 from utils import train, test, get_sample_result
+from flwr.common.parameter import weights_to_parameters, parameters_to_weights
 
 DEFAULT_SERVER_ADDRESS = "localhost:8099"
 
@@ -37,9 +38,10 @@ class CifarClient(fl.client.NumPyClient):
         self.sample_data = load_sample_data()
 
     def get_parameters(self):
-        return [val.detach().cpu().numpy() for _, val in self.model.state_dict().items()]
+        return weights_to_parameters([val.detach().cpu().numpy() for _, val in self.model.state_dict().items()])
 
     def set_parameters(self, parameters):
+        parameters = parameters_to_weights(parameters)
         params_dict = zip(self.model.state_dict().keys(), parameters)
         state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
         self.model.load_state_dict(state_dict, strict=True)
@@ -62,7 +64,7 @@ class CifarClient(fl.client.NumPyClient):
 
         # Run evaluation
         testloader = DataLoader(self.testset, batch_size=32, shuffle=False)
-        loss, accuracy = test(self.model, testloader, device=self.device)
+        # loss, accuracy = test(self.model, testloader, device=self.device)
         # print('client' + str(self.cid), accuracy)
         return self.get_parameters(), len(self.trainset), {'cid': self.cid}
 
