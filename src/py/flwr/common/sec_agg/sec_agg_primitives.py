@@ -27,6 +27,8 @@ import os
 import random
 import pickle
 import numpy as np
+from flwr.common.logger import log
+from logging import DEBUG, ERROR, INFO, WARNING
 
 from numpy.core.fromnumeric import clip
 
@@ -184,13 +186,18 @@ def rand_bytes(num: int = 32) -> bytes:
 
 
 def pseudo_rand_gen(seed: bytes, num_range: int, dimensions_list: List[Tuple]) -> Weights:
+    log(INFO, 'aaa')
     random.seed(seed)
     output = []
+    log(INFO, 'bbb')
     for dimension in dimensions_list:
         flat_arr = np.array([random.randrange(0, num_range)
                             for i in range(np.prod(dimension))])
+        log(INFO, 'ccc')
         modified_arr = np.reshape(flat_arr, dimension)
+        log(INFO, 'ddd')
         output.append(modified_arr)
+        log(INFO, 'eee')
     return output
 
 
