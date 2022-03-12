@@ -38,7 +38,9 @@ class CifarClient(fl.client.NumPyClient):
         self.sample_data = load_sample_data()
 
     def get_parameters(self):
-        return weights_to_parameters([val.detach().cpu().numpy() for _, val in self.model.state_dict().items()])
+        weights = [val.detach().cpu().numpy() for _, val in self.model.state_dict().items()]
+        assert(isinstance(weights[0], np.ndarray))
+        return weights_to_parameters(weights)
 
     def set_parameters(self, parameters):
         parameters = parameters_to_weights(parameters)
