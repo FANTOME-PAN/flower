@@ -1,17 +1,17 @@
 import argparse
 from typing import Dict
 
-from flwr.common.logger import log
-from flwr.server.grpc_server.grpc_server import start_insecure_grpc_server
+from py.flwr.common.logger import log
+from py.flwr.server.grpc_server.grpc_server import start_insecure_grpc_server
 
 import torch
 import torchvision
 
-import flwr as fl
+import py.flwr as fl
 import data_partition
 from collections import OrderedDict
 from utils import test
-from flwr.server.strategy import FedAvg
+from py.flwr.server.strategy import FedAvg
 import config as c
 
 DEFAULT_SERVER_ADDRESS = "localhost:8099"
