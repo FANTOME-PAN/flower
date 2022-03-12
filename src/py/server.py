@@ -1,18 +1,17 @@
 import argparse
 from typing import Dict
 
-from src.py.flwr.common.logger import log
-from py.flwr.server.grpc_server.grpc_server import start_insecure_grpc_server
+from flwr.common.logger import log
+from flwr.server.grpc_server.grpc_server import start_insecure_grpc_server
 
 import torch
 import torchvision
 
-import py.flwr as fl
+import flwr as fl
 import data_partition
 from collections import OrderedDict
 from utils import test
-from py.flwr.server.strategy import FedAvg
-import config as c
+from flwr.server.strategy import FedAvg
 
 DEFAULT_SERVER_ADDRESS = "localhost:8099"
 
@@ -30,14 +29,8 @@ def start_server(exp_name=None,
                  log_host=None,
                  log_dict='logs/'):
     if not exp_name:
-        exp_name = f"strategy_{c.strategy}_" \
-                   f"epoch_{epochs}_" \
-                   f"clients_{min_num_clients}_" \
-                   f"net_{c.model.__name__}_" \
-                   f"groups_{c.groups}_" \
-                   f"partition_{c.net_partitions}_" \
-                   f"iid_fraction_{c.iid_fractions}_" \
-                   f"coor_{c.coordinator.__class__.__name__}"
+        f"epoch_{epochs}_" \
+        f"clients_{min_num_clients}_"
 
     # Configure logger
     fl.common.logger.configure("server", host=log_host)
