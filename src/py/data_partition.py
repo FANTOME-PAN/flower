@@ -47,9 +47,9 @@ class PartitionedDataset(Dataset):
 
 def load_local_partitioned_data(client_id, iid_fraction: float, num_partitions: int):
     """Creates a dataset for each worker, which is a partition of a larger dataset."""
-    if os.path.exists(f'partitions/cifar10_cid{client_id}.pth'):
-        torch_partition_trainset, torch_partition_testset = torch.load(
-            f'partitions/cifar10_part{client_id}/{num_partitions}.pth')
+    default_cache_path = f'partitions/cifar10_part{client_id}/{num_partitions}.pth'
+    if os.path.exists(default_cache_path):
+        torch_partition_trainset, torch_partition_testset = torch.load(default_cache_path)
         return torch_partition_trainset, torch_partition_testset
     # Each worker loads the entire dataset, and then selects its partition
     # determined by its `client_id` (happens internally below)
@@ -69,7 +69,6 @@ def load_local_partitioned_data(client_id, iid_fraction: float, num_partitions: 
     torch_partition_trainset = PartitionedDataset(torch.Tensor(x_train), y_train)
     x_test, y_test = test_partitions[client_id]
     torch_partition_testset = PartitionedDataset(torch.Tensor(x_test), y_test)
-    torch.save((torch_partition_trainset, torch_partition_testset),
-               f'partitions/cifar10_part{client_id}-{num_partitions}.pth')
+    torch.save((torch_partition_trainset, torch_partition_testset), default_cache_path)
     return torch_partition_trainset, torch_partition_testset
 
