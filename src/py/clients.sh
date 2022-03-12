@@ -10,7 +10,7 @@ do
     # their own partition. For a large number of clients this causes a memory usage
     # spike that can cause client processes to get terminated. 
     # Staggered loading prevents this.
-    sleep 8s  
+    sleep 0.1s
     python3 client.py \
       --cid=$i \
       --num_partitions=${NUM_CLIENTS} \
