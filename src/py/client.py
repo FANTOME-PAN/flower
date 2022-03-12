@@ -38,12 +38,9 @@ class CifarClient(fl.client.NumPyClient):
         self.sample_data = load_sample_data()
 
     def get_parameters(self):
-        weights = [val.detach().cpu().numpy() for _, val in self.model.state_dict().items()]
-        assert(isinstance(weights[0], np.ndarray))
-        return weights_to_parameters(weights)
+        return [val.detach().cpu().numpy() for _, val in self.model.state_dict().items()]
 
     def set_parameters(self, parameters):
-        parameters = parameters_to_weights(parameters)
         params_dict = zip(self.model.state_dict().keys(), parameters)
         state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
         self.model.load_state_dict(state_dict, strict=True)
