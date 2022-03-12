@@ -18,6 +18,7 @@ from flwr.common.parameter import parameters_to_weights, weights_to_parameters
 from flwr.common.typing import AskKeysIns, AskKeysRes, AskVectorsIns, AskVectorsRes, FitIns, FitRes, Parameters, Scalar, SetupParamIns, SetupParamRes, ShareKeysIns, ShareKeysPacket, ShareKeysRes, UnmaskVectorsIns, UnmaskVectorsRes
 from flwr.server.client_proxy import ClientProxy
 from flwr.common.sec_agg import sec_agg_primitives
+from flwr.client.sec_agg_client import SecAggClient
 import concurrent.futures
 
 from flwr.common.logger import log
@@ -396,6 +397,7 @@ def ask_vectors(clients: List[ClientProxy], forward_packet_list_dict: Dict[int, 
     failures: List[BaseException] = []
     for future in futures:
         failure = future.exception()
+        log(INFO, failure)
         if failure is not None:
             failures.append(failure)
         else:
@@ -405,7 +407,7 @@ def ask_vectors(clients: List[ClientProxy], forward_packet_list_dict: Dict[int, 
     return results, failures
 
 
-def ask_vectors_client(client: ClientProxy, forward_packet_list: List[ShareKeysPacket], fit_ins: FitIns) -> Tuple[ClientProxy, AskVectorsRes]:
+def ask_vectors_client(client: SecAggClient, forward_packet_list: List[ShareKeysPacket], fit_ins: FitIns) -> Tuple[ClientProxy, AskVectorsRes]:
 
     return client, client.ask_vectors(AskVectorsIns(ask_vectors_in_list=forward_packet_list, fit_ins=fit_ins))
 
