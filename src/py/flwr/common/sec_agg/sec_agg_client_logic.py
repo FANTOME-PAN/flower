@@ -184,10 +184,11 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
     # add private mask
     private_mask = sec_agg_primitives.pseudo_rand_gen(
         client.b, client.mod_range, dimensions_list)
+    log(INFO, "3333")
     quantized_weights = sec_agg_primitives.weights_addition(
         quantized_weights, private_mask)
 
-    log(INFO, "3333")
+    log(INFO, "4444")
     for client_id in available_clients:
         # add pairwise mask
         shared_key = sec_agg_primitives.generate_shared_key(
@@ -201,7 +202,7 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
             quantized_weights = sec_agg_primitives.weights_subtraction(
                 quantized_weights, pairwise_mask)
 
-    log(INFO, "4444")
+    log(INFO, "5555")
     # Take mod of final weight update vector and return to server
     quantized_weights = sec_agg_primitives.weights_mod(
         quantized_weights, client.mod_range)
