@@ -30,8 +30,8 @@ def start_server(exp_name=None,
                  log_host=None,
                  log_dict='logs/'):
     if not exp_name:
-        f"epoch_{epochs}_" \
-        f"clients_{min_num_clients}_"
+        exp_name = f"epoch_{epochs}_" \
+                   f"clients_{min_num_clients}"
 
     # Configure logger
     fl.common.logger.configure("server", host=log_host)
