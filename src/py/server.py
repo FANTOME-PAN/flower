@@ -12,6 +12,7 @@ import data_partition
 from collections import OrderedDict
 from utils import test
 from flwr.server.strategy import FedAvg
+from model import MobileNet
 
 DEFAULT_SERVER_ADDRESS = "localhost:8099"
 
@@ -91,7 +92,7 @@ def get_eval_fn(testset: torchvision.datasets.CIFAR10):
 
     def evaluate(weights: fl.common.Weights):
         """Use the entire CIFAR-10 test set for evaluation."""
-        model = c.model(10)
+        model = MobileNet(10)
         state_dict = OrderedDict(
             {k: torch.Tensor(v) for k, v in zip(model.state_dict().keys(), weights) if v.size > 1}
         )
