@@ -47,7 +47,7 @@ class PartitionedDataset(Dataset):
 
 def load_local_partitioned_data(client_id, iid_fraction: float, num_partitions: int):
     """Creates a dataset for each worker, which is a partition of a larger dataset."""
-    default_cache_path = f'partitions/cifar10_part{client_id}/{num_partitions}.pth'
+    default_cache_path = f'partitions/cifar10_part{client_id}-{num_partitions}.pth'
     if os.path.exists(default_cache_path):
         torch_partition_trainset, torch_partition_testset = torch.load(default_cache_path)
         return torch_partition_trainset, torch_partition_testset
