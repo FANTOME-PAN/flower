@@ -1,7 +1,7 @@
 import argparse
 from typing import Dict
 
-from py.flwr.common.logger import log
+from src.py.flwr.common.logger import log
 from py.flwr.server.grpc_server.grpc_server import start_insecure_grpc_server
 
 import torch
