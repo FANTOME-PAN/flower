@@ -37,16 +37,17 @@ class CifarClient(fl.client.NumPyClient):
         self.device = device
         self.cnt = 0
         self.sample_data = load_sample_data()
+        self.available_keys = [k for k, v in self.model.state_dict().items() if v.shape != ()]
 
     def get_parameters(self):
-        return [val.detach().cpu().numpy() for _, val in self.model.state_dict().items()]
+        return [val.detach().cpu().numpy() for _, val in self.model.state_dict().items() if val.shape != ()]
 
     def set_parameters(self, parameters):
         # print(f"parameters: {type(parameters)} of {type(parameters[0])}")
-        params_dict = zip(self.model.state_dict().keys(), parameters)
-        state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
+        params_dict = zip(self.available_keys, parameters)
+        state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict if v.shape != ()})
         # print([o.shape for o in parameters][:8])
-        self.model.load_state_dict(state_dict, strict=True)
+        self.model.load_state_dict(state_dict, strict=False)
 
     def fit(self, parameters, config):
         # Load model parameters
@@ -59,7 +60,7 @@ class CifarClient(fl.client.NumPyClient):
 
         start_epoch = epoch_global + 1
         end_epoch = start_epoch + epochs - 1
-
+        print(f"client {self.cid} starts to fit")
         # Train the model
         trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True)
         train(self.model, trainloader, device=self.device, start_epoch=start_epoch, end_epoch=end_epoch, max_iter=3)
