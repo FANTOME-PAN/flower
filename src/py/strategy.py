@@ -150,6 +150,7 @@ class ReducedSecAgg(FedAvg, SecAggStrategy):
         ]
         ret = aggregate(weights_results)
         ret = weights_addition(ret, parameters_to_weights(self.cached_params))
+        self.cached_params = None
         return weights_to_parameters(ret), {}
 
     def aggregate_evaluate(
