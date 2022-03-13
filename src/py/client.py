@@ -41,7 +41,7 @@ class CifarClient(fl.client.NumPyClient):
         return [val.detach().cpu().numpy() for _, val in self.model.state_dict().items()]
 
     def set_parameters(self, parameters):
-        print(f"parameters: f{type(parameters)} of f{parameters[0].dtype}")
+        print(f"parameters: {type(parameters)} of {type(parameters[0])}")
         params_dict = zip(self.model.state_dict().keys(), parameters)
         state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
         print([o.shape for o in parameters][:8])
