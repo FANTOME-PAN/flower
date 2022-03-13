@@ -224,7 +224,7 @@ def quantize(weight: Weights, clipping_range: float, target_range: int) -> Weigh
     f = np.vectorize(lambda x:  min(target_range-1, (sorted((-clipping_range, x, clipping_range))
                                                      [1]+clipping_range)*target_range/(2*clipping_range)))
     for arr in weight:
-        if len(arr.shape) == 0:
+        if arr.size == 0:
             quantized_list.append(arr.astype(int))
         else:
             quantized_list.append(f(arr).astype(int))
@@ -250,7 +250,7 @@ def reverse_quantize(weight: Weights, clipping_range: float, target_range: int) 
     reverse_quantized_list = []
     f = np.vectorize(lambda x:  (x)/target_range*(2*clipping_range)-clipping_range)
     for arr in weight:
-        if len(arr.shape) == 0:
+        if arr.size == 0:
             reverse_quantized_list.append(arr.astype(float))
         else:
             reverse_quantized_list.append(f(arr.astype(float)))
