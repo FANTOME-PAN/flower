@@ -21,7 +21,8 @@ def train(
     device: torch.device,
     start_epoch: int,
     end_epoch: int,
-    log_progress: bool = True):
+    log_progress: bool = True,
+    max_iter=10000):
     """Trains a network on provided data from `start_epoch` to `end_epoch` incl. (the training loop).
     @param net:
     @param trainloader:
@@ -29,6 +30,7 @@ def train(
     @param start_epoch:
     @param end_epoch:
     @param log_progress:
+    @param max_iter:
     @return: list of (train loss, train acc) for each epoch
     """
 
@@ -43,7 +45,10 @@ def train(
     for epoch in range(start_epoch, end_epoch + 1):  # loop over the dataset multiple times, last epoch inclusive
         total_loss, total_correct, n_samples = 0.0, 0.0, 0
         pbar = tqdm(trainloader, desc=f'TRAIN Epoch {epoch}') if log_progress else trainloader
+        cnt = 0
         for data in pbar:
+            if cnt >= max_iter:
+                break
             images, labels = data[0].to(device), data[1].to(device)
             optimizer.zero_grad()
 
@@ -63,6 +68,7 @@ def train(
                     "train_loss": total_loss / n_samples,
                     "train_acc": total_correct / n_samples
                 })
+            cnt += 1
 
         results.append((total_loss / n_samples, total_correct / n_samples))
 

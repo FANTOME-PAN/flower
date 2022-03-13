@@ -125,6 +125,7 @@ def sec_agg_fit_round(server, rnd: int
 
     # === Stage 3: Ask Vectors ===
     log(INFO, "SecAgg Stage 3: Asking Vectors")
+    log(INFO, f"num clients: {len(ask_vectors_clients)}, fwd_lst: {len(forward_packet_list_dict)}, ins: {len(client_instructions)}")
     ask_vectors_results_and_failures = ask_vectors(
         ask_vectors_clients, forward_packet_list_dict, client_instructions)
     ask_vectors_results = ask_vectors_results_and_failures[0]

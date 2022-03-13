@@ -34,7 +34,7 @@ class CifarClient(fl.client.NumPyClient):
         self.testset = testset
         self.trainset = trainset
         self.device = device
-
+        self.cnt = 0
         self.sample_data = load_sample_data()
 
     def get_parameters(self):
@@ -59,7 +59,7 @@ class CifarClient(fl.client.NumPyClient):
 
         # Train the model
         trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True)
-        train(self.model, trainloader, device=self.device, start_epoch=start_epoch, end_epoch=end_epoch)
+        train(self.model, trainloader, device=self.device, start_epoch=start_epoch, end_epoch=end_epoch, max_iter=4)
 
         # Run evaluation
         testloader = DataLoader(self.testset, batch_size=32, shuffle=False)
