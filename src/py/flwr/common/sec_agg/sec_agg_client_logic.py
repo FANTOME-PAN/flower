@@ -127,93 +127,88 @@ def share_keys(client, share_keys_in: ShareKeysIns) -> ShareKeysRes:
 
 
 def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
-    try:
-        # Receive shares and fit model
-        packet_list = ask_vectors_ins.ask_vectors_in_list
-        fit_ins = ask_vectors_ins.fit_ins
-        available_clients: List[int] = []
+    # try:
+    # Receive shares and fit model
+    packet_list = ask_vectors_ins.ask_vectors_in_list
+    fit_ins = ask_vectors_ins.fit_ins
+    available_clients: List[int] = []
 
-        if len(packet_list) + 1 < client.threshold:
-            raise Exception("Available neighbours number smaller than threshold")
+    if len(packet_list) + 1 < client.threshold:
+        raise Exception("Available neighbours number smaller than threshold")
 
-        # decode all packets and verify all packets are valid. Save shares received
-        for packet in packet_list:
-            source = packet.source
-            available_clients.append(source)
-            destination = packet.destination
-            ciphertext = packet.ciphertext
-            if destination != client.sec_agg_id:
-                raise Exception(
-                    "Received packet meant for another user. Not supposed to happen")
-            shared_key = client.shared_key_2_dict[source]
-            plaintext = sec_agg_primitives.decrypt(shared_key, ciphertext)
-            try:
-                plaintext_source, plaintext_destination, plaintext_b_share, plaintext_sk1_share = sec_agg_primitives.share_keys_plaintext_separate(
-                    plaintext)
-            except:
-                raise Exception(
-                    "Decryption of ciphertext failed. Not supposed to happen")
-            if plaintext_source != source:
-                raise Exception(
-                    "Received packet source is different from intended source. Not supposed to happen")
-            if plaintext_destination != destination:
-                raise Exception(
-                    "Received packet destination is different from intended destination. Not supposed to happen")
-            client.b_share_dict[source] = plaintext_b_share
-            client.sk1_share_dict[source] = plaintext_sk1_share
+    # decode all packets and verify all packets are valid. Save shares received
+    for packet in packet_list:
+        source = packet.source
+        available_clients.append(source)
+        destination = packet.destination
+        ciphertext = packet.ciphertext
+        if destination != client.sec_agg_id:
+            raise Exception(
+                "Received packet meant for another user. Not supposed to happen")
+        shared_key = client.shared_key_2_dict[source]
+        plaintext = sec_agg_primitives.decrypt(shared_key, ciphertext)
+        try:
+            plaintext_source, plaintext_destination, plaintext_b_share, plaintext_sk1_share = sec_agg_primitives.share_keys_plaintext_separate(
+                plaintext)
+        except:
+            raise Exception(
+                "Decryption of ciphertext failed. Not supposed to happen")
+        if plaintext_source != source:
+            raise Exception(
+                "Received packet source is different from intended source. Not supposed to happen")
+        if plaintext_destination != destination:
+            raise Exception(
+                "Received packet destination is different from intended destination. Not supposed to happen")
+        client.b_share_dict[source] = plaintext_b_share
+        client.sk1_share_dict[source] = plaintext_sk1_share
 
-        # fit client
-        fit_res = client.client.fit(fit_ins)
-        parameters = fit_res.parameters
-        weights = parameters_to_weights(parameters)
-        weights_factor = fit_res.num_examples
+    # fit client
+    fit_res = client.client.fit(fit_ins)
+    parameters = fit_res.parameters
+    weights = parameters_to_weights(parameters)
+    weights_factor = fit_res.num_examples
 
-        # Quantize weight update vector
-        quantized_weights = sec_agg_primitives.quantize(
-            weights, client.clipping_range, client.target_range)
-        log(INFO, "1111")
-        # weights factor cannoot exceed maximum
-        if weights_factor > client.max_weights_factor:
-            weights_factor = client.max_weights_factor
-            log(WARNING,
-                "weights_factor exceeds allowed range and has been clipped. Either increase max_weights_factor, or train with fewer data. (Or server is performing unweighted aggregation)")
+    # Quantize weight update vector
+    quantized_weights = sec_agg_primitives.quantize(
+        weights, client.clipping_range, client.target_range)
+    # weights factor cannoot exceed maximum
+    if weights_factor > client.max_weights_factor:
+        weights_factor = client.max_weights_factor
+        log(WARNING,
+            "weights_factor exceeds allowed range and has been clipped. Either increase max_weights_factor, or train with fewer data. (Or server is performing unweighted aggregation)")
 
-        quantized_weights = sec_agg_primitives.weights_multiply(
-            quantized_weights, weights_factor)
-        quantized_weights = sec_agg_primitives.factor_weights_combine(
-            weights_factor, quantized_weights)
-        log(INFO, "2222")
-        dimensions_list: List[Tuple] = [a.shape for a in quantized_weights]
+    quantized_weights = sec_agg_primitives.weights_multiply(
+        quantized_weights, weights_factor)
+    quantized_weights = sec_agg_primitives.factor_weights_combine(
+        weights_factor, quantized_weights)
+    dimensions_list: List[Tuple] = [a.shape for a in quantized_weights]
 
-        # add private mask
-        private_mask = sec_agg_primitives.pseudo_rand_gen(
-            client.b, client.mod_range, dimensions_list)
-        log(INFO, "3333")
-        quantized_weights = sec_agg_primitives.weights_addition(
-            quantized_weights, private_mask)
+    # add private mask
+    private_mask = sec_agg_primitives.pseudo_rand_gen(
+        client.b, client.mod_range, dimensions_list)
+    quantized_weights = sec_agg_primitives.weights_addition(
+        quantized_weights, private_mask)
 
-        log(INFO, "4444")
-        for client_id in available_clients:
-            # add pairwise mask
-            shared_key = sec_agg_primitives.generate_shared_key(
-                client.sk1, sec_agg_primitives.bytes_to_public_key(client.public_keys_dict[client_id].pk1))
-            pairwise_mask = sec_agg_primitives.pseudo_rand_gen(
-                shared_key, client.mod_range, dimensions_list)
-            if client.sec_agg_id > client_id:
-                quantized_weights = sec_agg_primitives.weights_addition(
-                    quantized_weights, pairwise_mask)
-            else:
-                quantized_weights = sec_agg_primitives.weights_subtraction(
-                    quantized_weights, pairwise_mask)
+    for client_id in available_clients:
+        # add pairwise mask
+        shared_key = sec_agg_primitives.generate_shared_key(
+            client.sk1, sec_agg_primitives.bytes_to_public_key(client.public_keys_dict[client_id].pk1))
+        pairwise_mask = sec_agg_primitives.pseudo_rand_gen(
+            shared_key, client.mod_range, dimensions_list)
+        if client.sec_agg_id > client_id:
+            quantized_weights = sec_agg_primitives.weights_addition(
+                quantized_weights, pairwise_mask)
+        else:
+            quantized_weights = sec_agg_primitives.weights_subtraction(
+                quantized_weights, pairwise_mask)
 
-        log(INFO, "5555")
-        # Take mod of final weight update vector and return to server
-        quantized_weights = sec_agg_primitives.weights_mod(
-            quantized_weights, client.mod_range)
-        log(INFO, "SecAgg Stage 3 Completed: Sent Vectors")
-        return AskVectorsRes(parameters=weights_to_parameters(quantized_weights))
-    except:
-        traceback.print_exc()
+    # Take mod of final weight update vector and return to server
+    quantized_weights = sec_agg_primitives.weights_mod(
+        quantized_weights, client.mod_range)
+    log(INFO, "SecAgg Stage 3 Completed: Sent Vectors")
+    return AskVectorsRes(parameters=weights_to_parameters(quantized_weights))
+    # except:
+    #     traceback.print_exc()
 
 
 def unmask_vectors(client, unmask_vectors_ins: UnmaskVectorsIns) -> UnmaskVectorsRes:

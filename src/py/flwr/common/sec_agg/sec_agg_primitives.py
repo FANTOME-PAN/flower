@@ -187,17 +187,14 @@ def rand_bytes(num: int = 32) -> bytes:
 
 def pseudo_rand_gen(seed: bytes, num_range: int, dimensions_list: List[Tuple]) -> Weights:
     random.seed(seed)
-    seed = random.randrange(0, 1 << 32)
-    np.random.seed(seed)
     output = []
     for dimension in dimensions_list:
         if len(dimension) == 0:
-            modified_arr = np.array(np.random.randint(0, num_range), dtype=int)
+            modified_arr = np.array(random.randint(0, num_range - 1), dtype=int)
         else:
-            # flat_arr = np.array([random.randrange(0, num_range)
-            #                     for i in range(np.prod(dimension))])
-            # modified_arr = np.reshape(flat_arr, dimension)
-            modified_arr = np.random.randint(0, num_range, dimension, dtype=int)
+            flat_arr = np.array(random.choices(range(num_range), k=np.prod(dimension)))
+            modified_arr = np.reshape(flat_arr, dimension)
+            # modified_arr = np.random.randint(0, num_range, dimension, dtype=int)
         output.append(modified_arr)
     return output
 

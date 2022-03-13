@@ -41,10 +41,10 @@ class CifarClient(fl.client.NumPyClient):
         return [val.detach().cpu().numpy() for _, val in self.model.state_dict().items()]
 
     def set_parameters(self, parameters):
-        print(f"parameters: {type(parameters)} of {type(parameters[0])}")
+        # print(f"parameters: {type(parameters)} of {type(parameters[0])}")
         params_dict = zip(self.model.state_dict().keys(), parameters)
         state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
-        print([o.shape for o in parameters][:8])
+        # print([o.shape for o in parameters][:8])
         self.model.load_state_dict(state_dict, strict=True)
 
     def fit(self, parameters, config):
@@ -64,10 +64,10 @@ class CifarClient(fl.client.NumPyClient):
         train(self.model, trainloader, device=self.device, start_epoch=start_epoch, end_epoch=end_epoch, max_iter=4)
 
         # Run evaluation
-        testloader = DataLoader(self.testset, batch_size=32, shuffle=False)
+        # testloader = DataLoader(self.testset, batch_size=32, shuffle=False)
         # loss, accuracy = test(self.model, testloader, device=self.device)
         # print('client' + str(self.cid), accuracy)
-        return self.get_parameters(), len(self.trainset), {'cid': self.cid}
+        return self.get_parameters(), 1, {'cid': self.cid}
 
     def evaluate(self, parameters, config):
         # Load model parameters
