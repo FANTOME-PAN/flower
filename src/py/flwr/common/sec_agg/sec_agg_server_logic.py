@@ -398,6 +398,7 @@ def ask_vectors(clients: List[ClientProxy], forward_packet_list_dict: Dict[int, 
     failures: List[BaseException] = []
     for future in futures:
         failure = future.exception()
+        log(INFO, failure)
         if failure is not None:
             failures.append(failure)
         else:
