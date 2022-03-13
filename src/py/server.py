@@ -56,7 +56,7 @@ def start_server(exp_name=None,
                             "share_num": 4,
                             "threshold": 4,
                             'max_weights_factor': 1,
-                            'target_range': 1 << 24,
+                            'target_range': 1 << 16,
                             'clipping_range': 3,
                             })
 
