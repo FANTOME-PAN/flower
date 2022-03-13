@@ -177,10 +177,10 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
         log(WARNING,
             "weights_factor exceeds allowed range and has been clipped. Either increase max_weights_factor, or train with fewer data. (Or server is performing unweighted aggregation)")
 
-    quantized_weights = sec_agg_primitives.weights_multiply(
-        quantized_weights, weights_factor)
-    quantized_weights = sec_agg_primitives.factor_weights_combine(
-        weights_factor, quantized_weights)
+    # quantized_weights = sec_agg_primitives.weights_multiply(
+    #     quantized_weights, weights_factor)
+    # quantized_weights = sec_agg_primitives.factor_weights_combine(
+    #     weights_factor, quantized_weights)
     dimensions_list: List[Tuple] = [a.shape for a in quantized_weights]
 
     # add private mask

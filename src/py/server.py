@@ -54,7 +54,11 @@ def start_server(exp_name=None,
         on_evaluate_config_fn=generate_config(epochs, batch_size),
         sec_agg_param_dict={"min_num": min_sample_size,
                             "share_num": 4,
-                            "threshold": 4})
+                            "threshold": 4,
+                            'max_weights_factor': 1,
+                            'target_range': 1 << 16,
+                            'clipping_range': 3,
+                            })
 
     server = fl.server.Server(client_manager=client_manager, strategy=strategy)
 

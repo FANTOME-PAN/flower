@@ -16,6 +16,7 @@ from flwr.common import parameters_to_weights, weights_to_parameters
 from data_partition import load_local_partitioned_data, load_sample_data
 from model import MobileNet
 from utils import train, test, get_sample_result
+from flwr.common.sec_agg.sec_agg_primitives import weights_subtraction
 from flwr.common.parameter import weights_to_parameters, parameters_to_weights
 
 DEFAULT_SERVER_ADDRESS = "localhost:8099"
@@ -61,13 +62,13 @@ class CifarClient(fl.client.NumPyClient):
 
         # Train the model
         trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True)
-        train(self.model, trainloader, device=self.device, start_epoch=start_epoch, end_epoch=end_epoch, max_iter=4)
-
+        train(self.model, trainloader, device=self.device, start_epoch=start_epoch, end_epoch=end_epoch, max_iter=8)
+        diff = weights_subtraction(self.get_parameters(), parameters)
         # Run evaluation
         # testloader = DataLoader(self.testset, batch_size=32, shuffle=False)
         # loss, accuracy = test(self.model, testloader, device=self.device)
         # print('client' + str(self.cid), accuracy)
-        return self.get_parameters(), 1, {'cid': self.cid}
+        return diff, 1, {'cid': self.cid}
 
     def evaluate(self, parameters, config):
         # Load model parameters

@@ -20,7 +20,8 @@ Paper: https://eprint.iacr.org/2017/281.pdf
 
 from logging import WARNING
 from typing import Callable, Dict, List, Optional, Tuple
-
+from functools import reduce
+import numpy as np
 from flwr.common import (
     EvaluateIns,
     EvaluateRes,
@@ -33,6 +34,7 @@ from flwr.common import (
     weights_to_parameters,
 )
 from flwr.common.logger import log
+from flwr.common.sec_agg.sec_agg_primitives import weights_addition
 from flwr.server.client_manager import ClientManager
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy.fedavg import FedAvg
@@ -100,6 +102,7 @@ class ReducedSecAgg(FedAvg, SecAggStrategy):
                         accept_failures=accept_failures,
                         initial_parameters=initial_parameters)
         self.sec_agg_param_dict = sec_agg_param_dict
+        self.cached_params = None
 
     def get_sec_agg_param(self) -> Dict[str, int]:
         return self.sec_agg_param_dict.copy()
@@ -108,6 +111,8 @@ class ReducedSecAgg(FedAvg, SecAggStrategy):
         self, rnd: int, parameters: Parameters, client_manager: ClientManager
     ) -> List[Tuple[ClientProxy, FitIns]]:
         """Configure the next round of training."""
+        assert self.cached_params is None
+        self.cached_params = parameters
         config = {}
         if self.on_fit_config_fn is not None:
             # Custom fit config function provided
@@ -124,3 +129,78 @@ class ReducedSecAgg(FedAvg, SecAggStrategy):
 
         # Return client/config pairs
         return [(client, fit_ins) for client in clients]
+
+    def aggregate_fit(
+        self,
+        rnd: int,
+        results: List[Tuple[ClientProxy, FitRes]],
+        failures: List[BaseException],
+    ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
+        """Aggregate fit results using weighted average."""
+        if not results:
+            return None, {}
+        # Do not aggregate if there are failures and failures are not accepted
+        if not self.accept_failures and failures:
+            return None, {}
+        assert self.cached_params is not None
+        # Convert results
+        weights_results = [
+            (parameters_to_weights(fit_res.parameters), fit_res.num_examples)
+            for client, fit_res in results
+        ]
+        ret = aggregate(weights_results)
+        ret = weights_addition(ret, parameters_to_weights(self.cached_params))
+        return weights_to_parameters(ret), {}
+
+    def aggregate_evaluate(
+        self,
+        rnd: int,
+        results: List[Tuple[ClientProxy, EvaluateRes]],
+        failures: List[BaseException],
+    ) -> Tuple[Optional[float], Dict[str, Scalar]]:
+        """Aggregate evaluation losses using weighted average."""
+        if not results:
+            return None, {}
+        # Do not aggregate if there are failures and failures are not accepted
+        if not self.accept_failures and failures:
+            return None, {}
+        loss_aggregated = weighted_loss_avg(
+            [
+                (
+                    evaluate_res.num_examples,
+                    evaluate_res.loss,
+                    evaluate_res.accuracy,
+                )
+                for _, evaluate_res in results
+            ]
+        )
+        return loss_aggregated, {}
+
+
+def aggregate(results: List[Tuple[Weights, int]]) -> Weights:
+    """Compute weighted average."""
+    # Calculate the total number of examples used during training
+    num_examples_total = sum([num_examples for _, num_examples in results])
+
+    # Create a list of weights, each multiplied by the related number of examples
+    # weighted_weights = [
+    #     [layer * num_examples for layer in weights] for weights, num_examples in results
+    # ]
+    weights = [o for o, _ in results]
+
+    # Compute average weights of each layer
+    weights_prime: Weights = [
+        reduce(np.add, layer_updates) / num_examples_total
+        for layer_updates in zip(*weights)
+    ]
+    return weights_prime
+
+
+def weighted_loss_avg(results: List[Tuple[int, float, Optional[float]]]) -> float:
+    """Aggregate evaluation results obtained from multiple clients."""
+    num_total_evaluation_examples = sum(
+        [num_examples for num_examples, _, _ in results]
+    )
+    weighted_losses = [num_examples * loss for num_examples, loss, _ in results]
+    return sum(weighted_losses) / num_total_evaluation_examples
+

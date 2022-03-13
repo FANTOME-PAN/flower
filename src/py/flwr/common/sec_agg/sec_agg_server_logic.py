@@ -206,10 +206,10 @@ def sec_agg_fit_round(server, rnd: int
         masked_vector, sec_agg_param_dict['mod_range'])
     # Divide vector by number of clients who have given us their masked vector
     # i.e. those participating in final unmask vectors stage
-    total_weights_factor, masked_vector = sec_agg_primitives.factor_weights_extract(
-        masked_vector)
-    masked_vector = sec_agg_primitives.weights_divide(
-        masked_vector, total_weights_factor)
+    # total_weights_factor, masked_vector = sec_agg_primitives.factor_weights_extract(
+    #     masked_vector)
+    # masked_vector = sec_agg_primitives.weights_divide(
+    #     masked_vector, total_weights_factor)
     aggregated_vector = sec_agg_primitives.reverse_quantize(
         masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'])
     aggregated_parameters = weights_to_parameters(aggregated_vector)
@@ -437,7 +437,7 @@ def unmask_vectors(clients: List[ClientProxy], dropout_clients: List[ClientProxy
     return results, failures
 
 
-def unmask_vectors_client(client: ClientProxy, idx: int, clients: List[ClientProxy], dropout_clients: List[ClientProxy], sample_num: int, share_num: int) -> Tuple[ClientProxy, UnmaskVectorsRes]:
+def unmask_vectors_client(client: SecAggClient, idx: int, clients: List[ClientProxy], dropout_clients: List[ClientProxy], sample_num: int, share_num: int) -> Tuple[ClientProxy, UnmaskVectorsRes]:
     if share_num == sample_num:
         # complete graph
         return client, client.unmask_vectors(UnmaskVectorsIns(available_clients=clients, dropout_clients=dropout_clients))
