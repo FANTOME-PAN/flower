@@ -102,7 +102,6 @@ class ReducedSecAgg(FedAvg, SecAggStrategy):
                         accept_failures=accept_failures,
                         initial_parameters=initial_parameters)
         self.sec_agg_param_dict = sec_agg_param_dict
-        self.cached_params = None
 
     def get_sec_agg_param(self) -> Dict[str, int]:
         return self.sec_agg_param_dict.copy()
@@ -111,8 +110,6 @@ class ReducedSecAgg(FedAvg, SecAggStrategy):
         self, rnd: int, parameters: Parameters, client_manager: ClientManager
     ) -> List[Tuple[ClientProxy, FitIns]]:
         """Configure the next round of training."""
-        assert self.cached_params is None
-        self.cached_params = parameters
         config = {}
         if self.on_fit_config_fn is not None:
             # Custom fit config function provided

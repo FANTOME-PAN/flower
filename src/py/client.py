@@ -62,7 +62,7 @@ class CifarClient(fl.client.NumPyClient):
 
         # Train the model
         trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True)
-        train(self.model, trainloader, device=self.device, start_epoch=start_epoch, end_epoch=end_epoch, max_iter=8)
+        train(self.model, trainloader, device=self.device, start_epoch=start_epoch, end_epoch=end_epoch, max_iter=3)
         diff = weights_subtraction(self.get_parameters(), parameters)
         # Run evaluation
         # testloader = DataLoader(self.testset, batch_size=32, shuffle=False)
