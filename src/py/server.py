@@ -101,8 +101,12 @@ def get_eval_fn(testset: torchvision.datasets.CIFAR10):
     def evaluate(weights: fl.common.Weights):
         """Use the entire CIFAR-10 test set for evaluation."""
         model = MobileNet(10)
+        if len(weights) < len(model.state_dict()):
+            keys = [k for k, v in model.state_dict().items() if v.shape != ()]
+        else:
+            keys = model.state_dict().keys()
         state_dict = OrderedDict(
-            {k: torch.Tensor(v) for k, v in zip(model.state_dict().keys(), weights) if v.size > 1}
+            {k: torch.Tensor(v) for k, v in zip(keys, weights)}
         )
         model.load_state_dict(state_dict, strict=False)
         model.to(DEVICE)
