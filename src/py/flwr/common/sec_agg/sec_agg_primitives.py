@@ -187,6 +187,8 @@ def rand_bytes(num: int = 32) -> bytes:
 
 def pseudo_rand_gen(seed: bytes, num_range: int, dimensions_list: List[Tuple]) -> Weights:
     # random.seed(seed)
+    print(seed)
+    print(len(seed))
     np.random.seed(seed)
     output = []
     for dimension in dimensions_list:
