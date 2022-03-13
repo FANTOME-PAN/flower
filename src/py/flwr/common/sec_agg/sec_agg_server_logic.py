@@ -208,8 +208,8 @@ def sec_agg_fit_round(server, rnd: int
     # i.e. those participating in final unmask vectors stage
     # total_weights_factor, masked_vector = sec_agg_primitives.factor_weights_extract(
     #     masked_vector)
-    # masked_vector = sec_agg_primitives.weights_divide(
-    #     masked_vector, total_weights_factor)
+    masked_vector = sec_agg_primitives.weights_divide(
+        masked_vector, len(unmask_vectors_results))
     aggregated_vector = sec_agg_primitives.reverse_quantize(
         masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'])
     aggregated_vector = sec_agg_primitives.weights_addition(aggregated_vector, parameters_to_weights(server.parameters))
