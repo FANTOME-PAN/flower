@@ -181,56 +181,6 @@ class ServerMessage(google.protobuf.message.Message):
             FIT_INS_FIELD_NUMBER: builtins.int
             @property
             def sec_agg_param_dict(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Scalar]: ...
-<<<<<<< Updated upstream
-
-            class FitIns(google.protobuf.message.Message):
-                DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-                class ConfigEntry(google.protobuf.message.Message):
-                    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-                    KEY_FIELD_NUMBER: builtins.int
-                    VALUE_FIELD_NUMBER: builtins.int
-                    key: typing.Text = ...
-
-                    @property
-                    def value(self) -> global___Scalar: ...
-
-                    def __init__(self,
-                        *,
-                        key : typing.Text = ...,
-                        value : typing.Optional[global___Scalar] = ...,
-                        ) -> None: ...
-                    def HasField(self, field_name: typing_extensions.Literal[u"value",b"value"]) -> builtins.bool: ...
-                    def ClearField(self, field_name: typing_extensions.Literal[u"key",b"key",u"value",b"value"]) -> None: ...
-
-                PARAMETERS_FIELD_NUMBER: builtins.int
-                CONFIG_FIELD_NUMBER: builtins.int
-
-                @property
-                def parameters(self) -> global___Parameters: ...
-
-                @property
-                def config(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Scalar]: ...
-
-                def __init__(self,
-                    *,
-                    parameters : typing.Optional[global___Parameters] = ...,
-                    config : typing.Optional[typing.Mapping[typing.Text, global___Scalar]] = ...,
-                    ) -> None: ...
-                def HasField(self, field_name: typing_extensions.Literal[u"parameters",b"parameters"]) -> builtins.bool: ...
-                def ClearField(self, field_name: typing_extensions.Literal[u"config",b"config",u"parameters",b"parameters"]) -> None: ...
-            FIT_INS_FIELD_NUMBER: builtins.int
-
-            @property
-            def fit_ins(self) -> global___ServerMessage.SecAggMsg.SetupParam.FitIns: ...
-
-            def __init__(self,
-                *,
-                sec_agg_param_dict : typing.Optional[typing.Mapping[typing.Text, global___Scalar]] = ...,
-                fit_ins : typing.Optional[global___ServerMessage.SecAggMsg.SetupParam.FitIns] = ...,
-                ) -> None: ...
-            def HasField(self, field_name: typing_extensions.Literal[u"fit_ins",b"fit_ins"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal[u"fit_ins",b"fit_ins",u"sec_agg_param_dict",b"sec_agg_param_dict"]) -> None: ...
-=======
             @property
             def fit_ins(self) -> global___ServerMessage.SecAggMsg.SetupParam.FitIns: ...
             def __init__(self,
@@ -240,7 +190,6 @@ class ServerMessage(google.protobuf.message.Message):
                 ) -> None: ...
             def HasField(self, field_name: typing_extensions.Literal["fit_ins",b"fit_ins"]) -> builtins.bool: ...
             def ClearField(self, field_name: typing_extensions.Literal["fit_ins",b"fit_ins","sec_agg_param_dict",b"sec_agg_param_dict"]) -> None: ...
->>>>>>> Stashed changes
 
         class AskKeys(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
@@ -293,65 +242,6 @@ class ServerMessage(google.protobuf.message.Message):
                 SOURCE_FIELD_NUMBER: builtins.int
                 DESTINATION_FIELD_NUMBER: builtins.int
                 CIPHERTEXT_FIELD_NUMBER: builtins.int
-<<<<<<< Updated upstream
-                source: builtins.int = ...
-                destination: builtins.int = ...
-                ciphertext: builtins.bytes = ...
-
-                def __init__(self,
-                    *,
-                    source : builtins.int = ...,
-                    destination : builtins.int = ...,
-                    ciphertext : builtins.bytes = ...,
-                    ) -> None: ...
-                def ClearField(self, field_name: typing_extensions.Literal[u"ciphertext",b"ciphertext",u"destination",b"destination",u"source",b"source"]) -> None: ...
-
-            # class FitIns(google.protobuf.message.Message):
-            #     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-            #     class ConfigEntry(google.protobuf.message.Message):
-            #         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-            #         KEY_FIELD_NUMBER: builtins.int
-            #         VALUE_FIELD_NUMBER: builtins.int
-            #         key: typing.Text = ...
-            #
-            #         @property
-            #         def value(self) -> global___Scalar: ...
-            #
-            #         def __init__(self,
-            #             *,
-            #             key : typing.Text = ...,
-            #             value : typing.Optional[global___Scalar] = ...,
-            #             ) -> None: ...
-            #         def HasField(self, field_name: typing_extensions.Literal[u"value",b"value"]) -> builtins.bool: ...
-            #         def ClearField(self, field_name: typing_extensions.Literal[u"key",b"key",u"value",b"value"]) -> None: ...
-            #
-            #     PARAMETERS_FIELD_NUMBER: builtins.int
-            #     CONFIG_FIELD_NUMBER: builtins.int
-            #
-            #     @property
-            #     def parameters(self) -> global___Parameters: ...
-            #
-            #     @property
-            #     def config(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Scalar]: ...
-            #
-            #     def __init__(self,
-            #         *,
-            #         parameters : typing.Optional[global___Parameters] = ...,
-            #         config : typing.Optional[typing.Mapping[typing.Text, global___Scalar]] = ...,
-            #         ) -> None: ...
-            #     def HasField(self, field_name: typing_extensions.Literal[u"parameters",b"parameters"]) -> builtins.bool: ...
-            #     def ClearField(self, field_name: typing_extensions.Literal[u"config",b"config",u"parameters",b"parameters"]) -> None: ...
-
-            PACKET_LIST_FIELD_NUMBER: builtins.int
-            # FIT_INS_FIELD_NUMBER: builtins.int
-
-            @property
-            def packet_list(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ServerMessage.SecAggMsg.AskVectors.Packet]: ...
-            #
-            # @property
-            # def fit_ins(self) -> global___ServerMessage.SecAggMsg.AskVectors.FitIns: ...
-
-=======
                 source: builtins.int
                 destination: builtins.int
                 ciphertext: builtins.bytes
@@ -366,7 +256,6 @@ class ServerMessage(google.protobuf.message.Message):
             PACKET_LIST_FIELD_NUMBER: builtins.int
             @property
             def packet_list(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ServerMessage.SecAggMsg.AskVectors.Packet]: ...
->>>>>>> Stashed changes
             def __init__(self,
                 *,
                 packet_list: typing.Optional[typing.Iterable[global___ServerMessage.SecAggMsg.AskVectors.Packet]] = ...,
@@ -545,24 +434,14 @@ class ClientMessage(google.protobuf.message.Message):
     class SecAggRes(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
         class SetupParamRes(google.protobuf.message.Message):
-<<<<<<< Updated upstream
-            DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-            TARGET_BITS_NUMBER: builtins.int
-            target_bits: builtins.int = ...
-=======
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
             TARGET_BITS_FIELD_NUMBER: builtins.int
             target_bits: builtins.int
->>>>>>> Stashed changes
             def __init__(self,
                 *,
                 target_bits: builtins.int = ...,
                 ) -> None: ...
-<<<<<<< Updated upstream
-            def ClearField(self, field_name: typing_extensions.Literal[u"target_bits",b"target_bits"]) -> None: ...
-=======
             def ClearField(self, field_name: typing_extensions.Literal["target_bits",b"target_bits"]) -> None: ...
->>>>>>> Stashed changes
 
         class AskKeysRes(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
