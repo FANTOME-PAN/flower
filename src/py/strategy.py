@@ -114,7 +114,7 @@ class ReducedSecAgg(FedAvg, SecAggStrategy):
         self.sec_agg_param_dict = sec_agg_param_dict
         net = build_model()
         net.apply(init_weights)
-        net.state_dict().items()
+        net = net.state_dict().items()
         self.initial_parameters = weights_to_parameters([v.detach().cpu().numpy() for k, v in net if v.shape != ()])
 
     def get_sec_agg_param(self) -> Dict[str, int]:
