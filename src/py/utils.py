@@ -36,7 +36,8 @@ def train(
 
     # Define loss and optimizer
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-6)
+    # optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-6)
+    optimizer = torch.optim.RMSprop(net.parameters(), lr=0.0001, weight_decay=1e-6)
 
     print(f"Training from epoch(s) {start_epoch} to {end_epoch} w/ {len(trainloader)} batches each.", flush=True)
     results = []
