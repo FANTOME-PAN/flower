@@ -217,8 +217,15 @@ def sec_agg_fit_round(server, rnd: int
         masked_vector, len(unmask_vectors_results))
     aggregated_vector = sec_agg_primitives.reverse_quantize(
         masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'])
-    aggregated_vector = sec_agg_primitives.weights_addition(aggregated_vector, parameters_to_weights(server.parameters))
-    aggregated_parameters = weights_to_parameters(aggregated_vector)
+    saved_weights = parameters_to_weights(server.parameters)
+    ptr = 0
+    for i in range(len(saved_weights)):
+        if saved_weights[i].shape == ():
+            continue
+        saved_weights[i] += aggregated_vector[ptr]
+        ptr += 1
+    # aggregated_vector = sec_agg_primitives.weights_addition(aggregated_vector, parameters_to_weights(server.parameters))
+    aggregated_parameters = weights_to_parameters(saved_weights)
     return aggregated_parameters, None, None
 
 
