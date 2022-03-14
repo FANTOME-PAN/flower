@@ -29,6 +29,7 @@ import pickle
 import numpy as np
 from flwr.common.logger import log
 from logging import DEBUG, ERROR, INFO, WARNING
+import math
 
 from numpy.core.fromnumeric import clip
 
@@ -230,6 +231,27 @@ def quantize(weight: Weights, clipping_range: float, target_range: int) -> Weigh
             quantized_list.append(f(arr).astype(int))
     return quantized_list
 
+
+def quantize_unbounded(weight: Weights, clipping_range: float, target_range: int, mod_range: int) -> Weights:
+    quantized_list = []
+    check_clipping_range(weight, clipping_range)
+    quantizer = target_range/(2*clipping_range)
+    for arr in weight:
+        # stochastic quantization
+        tmp = (arr + clipping_range) * quantizer
+        quantized = np.ceil(tmp).astype(np.int32)
+        rand_arr = np.random.rand(*quantized.shape)
+        # p(Q(x))
+        quantized[rand_arr < quantized - tmp] -= 1
+        # mod k
+        if bin(mod_range).count("1") == 1:  # fast mod
+            msk = mod_range - 1
+            quantized = quantized & msk
+        else:
+            quantized = np.mod(quantized, mod_range)
+        quantized_list.append(quantized)
+    return quantized_list
+
 # Quick check that all numbers are within the clipping range
 # Throw warning if there exists numbers that exceed it
 
@@ -312,3 +334,20 @@ def weights_multiply(a: Weights, b: int) -> Weights:
 
 def weights_divide(a: Weights, b: int) -> Weights:
     return [a[idx] / b for idx in range(len(a))]
+
+
+# get alpha % max
+def get_alpha_percent_weights(weights: Weights, alpha=1e-6):
+    max_lst = np.zeros(math.ceil(sum([w.size for w in weights]) * alpha) if alpha > 0 else 1)
+    assert len(max_lst) > 0
+    for w in weights:
+        if w.shape == ():
+            continue
+        w = w.ravel()
+        lst: np.ndarray = np.abs(w[(w > max_lst[0]) | (w < -max_lst[0])])
+        lst.sort()
+        max_lst[:min(max_lst.size, lst.size)] = lst[max(0, lst.size - max_lst.size):]
+        max_lst.sort()
+    return max_lst[0]
+
+
