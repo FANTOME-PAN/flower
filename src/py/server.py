@@ -102,7 +102,8 @@ def get_eval_fn(testset: torchvision.datasets.CIFAR10):
     def evaluate(weights: fl.common.Weights):
         """Use the entire CIFAR-10 test set for evaluation."""
         model = build_model()
-        if len(weights) < len(model.state_dict()):
+        if len(weights) < len(model.state_dict().items()):
+            print(1111111111)
             keys = [k for k, v in model.state_dict().items() if v.shape != ()]
         else:
             keys = model.state_dict().keys()
