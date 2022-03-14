@@ -418,9 +418,9 @@ def ask_vectors(clients: List[ClientProxy], forward_packet_list_dict: Dict[int, 
     return results, failures
 
 
-def ask_vectors_client(client: SecAggClient, forward_packet_list: List[ShareKeysPacket], fit_ins: FitIns) -> Tuple[ClientProxy, AskVectorsRes]:
+def ask_vectors_client(client: SecAggClient, forward_packet_list: List[ShareKeysPacket]) -> Tuple[ClientProxy, AskVectorsRes]:
 
-    return client, client.ask_vectors(AskVectorsIns(ask_vectors_in_list=forward_packet_list, fit_ins=fit_ins))
+    return client, client.ask_vectors(AskVectorsIns(ask_vectors_in_list=forward_packet_list))
 
 
 def unmask_vectors(clients: List[ClientProxy], dropout_clients: List[ClientProxy], sample_num: int, share_num: int) -> UnmaskVectorsResultsAndFailures:
