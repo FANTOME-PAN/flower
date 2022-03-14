@@ -173,6 +173,7 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
     # fit client
     weights = client.diff
     weights_factor = client.weights_factor
+    print(f"Client {client.sec_agg_id} 's diff len = {len(weights)} with factor {weights_factor}")
 
     # Quantize weight update vector
     quantized_weights = sec_agg_primitives.quantize_unbounded(

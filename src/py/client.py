@@ -43,13 +43,16 @@ class CifarClient(fl.client.NumPyClient):
         tmp_dict = self.model.state_dict()
         # ret = [val.detach().cpu().numpy() for _, val in self.model.state_dict().items() if val.shape != ()]
         ret = [tmp_dict[k].detach().cpu().numpy() for k in self.available_keys]
-        for i, arr in enumerate(ret):
-            if arr.max() > 3:
-                print(f"Client {self.cid}: exceeding range in {self.available_keys[i]} with max {arr.max()}")
+        # for i, arr in enumerate(ret):
+        #     if arr.max() > 3:
+        #         print(f"Client {self.cid}: exceeding range in {self.available_keys[i]} with max {arr.max()}")
         return ret
 
     def set_parameters(self, parameters):
         # print(f"parameters: {type(parameters)} of {type(parameters[0])}")
+        for i, arr in enumerate(parameters):
+            if arr.max() > 3:
+                print(f"Set Client {self.cid}: exceeding range in {self.available_keys[i]} with max {arr.max()}")
         params_dict = zip(self.available_keys, [o for o in parameters if o.shape != ()])
         state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict if v.shape != ()})
         # print([o.shape for o in parameters][:8])
@@ -72,8 +75,6 @@ class CifarClient(fl.client.NumPyClient):
         # Train the model
         trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True)
         train(self.model, trainloader, device=self.device, start_epoch=start_epoch, end_epoch=end_epoch, max_iter=3)
-        current = self.get_parameters()
-        assert len(current) == len(parameters)
         diff = weights_subtraction(self.get_parameters(), parameters)
         # Run evaluation
         # testloader = DataLoader(self.testset, batch_size=32, shuffle=False)
