@@ -43,7 +43,7 @@ class CifarClient(fl.client.NumPyClient):
         ret = [val.detach().cpu().numpy() for _, val in self.model.state_dict().items() if val.shape != ()]
         for i, arr in enumerate(ret):
             if arr.max() > 3:
-                print(f"Client {self.cid}: exceeding range in f{self.available_keys[i]}")
+                print(f"Client {self.cid}: exceeding range in f{self.available_keys[i]} with max {arr.max()}")
         return ret
 
     def set_parameters(self, parameters):
