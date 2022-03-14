@@ -217,8 +217,8 @@ def setup_param_res_to_proto(setup_param_res: typing.SetupParamRes):
     )
 
 
-def setup_param_res_from_proto(setup_param_res: ServerMessage.SecAggMsg) -> typing.SetupParamRes:
-    return typing.SetupParamRes(target_bits=setup_param_res.target_bits)
+def setup_param_res_from_proto(setup_param_res: ClientMessage.SecAggRes) -> typing.SetupParamRes:
+    return typing.SetupParamRes(target_bits=setup_param_res.setup_param_res.target_bits)
 # === Ask Keys ===
 
 
