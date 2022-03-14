@@ -46,7 +46,13 @@ message ServerMessage {
   }
   message SecAggMsg{
     message SetupParam{
+      message FitIns {
+        Parameters parameters = 1;
+        map<string, Scalar> config = 2;
+      }
+
       map<string, Scalar> sec_agg_param_dict = 1;
+      FitIns fit_ins=2;
     }
     message AskKeys{}
     message ShareKeys{
@@ -62,12 +68,7 @@ message ServerMessage {
         int64 destination=2;
         bytes ciphertext=3;
       }
-      message FitIns {
-        Parameters parameters = 1;
-        map<string, Scalar> config = 2;
-      }
       repeated Packet packet_list=1;
-      FitIns fit_ins=2;
     }
     message UnmaskVectors{
       repeated int64 available_clients=1;
@@ -108,7 +109,9 @@ message ClientMessage {
     map<string, Scalar> metrics = 4;
   }
   message SecAggRes{
-    message SetupParamRes{}
+    message SetupParamRes{
+        int64 target_bits = 1;
+    }
     message AskKeysRes{
         bytes pk1=1;
         bytes pk2=2;
