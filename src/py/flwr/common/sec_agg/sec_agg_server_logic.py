@@ -132,7 +132,7 @@ def sec_agg_fit_round(server, rnd: int
     log(INFO, "SecAgg Stage 3: Asking Vectors")
     log(INFO, f"num clients: {len(ask_vectors_clients)}, fwd_lst: {len(forward_packet_list_dict)}, ins: {len(client_instructions)}")
     ask_vectors_results_and_failures = ask_vectors(
-        ask_vectors_clients, forward_packet_list_dict, client_instructions)
+        ask_vectors_clients, forward_packet_list_dict)
     ask_vectors_results = ask_vectors_results_and_failures[0]
     log(INFO, f"gathered results: {len(ask_vectors_results)}")
     if len(ask_vectors_results) < sec_agg_param_dict['min_num']:
@@ -391,7 +391,7 @@ def share_keys_client(client: ClientProxy, idx: int, public_keys_dict: Dict[int,
     return client, client.share_keys(ShareKeysIns(public_keys_dict=local_dict))
 
 
-def ask_vectors(clients: List[ClientProxy], forward_packet_list_dict: Dict[int, List[ShareKeysPacket]], client_instructions: Dict[int, FitIns]) -> AskVectorsResultsAndFailures:
+def ask_vectors(clients: List[ClientProxy], forward_packet_list_dict: Dict[int, List[ShareKeysPacket]]) -> AskVectorsResultsAndFailures:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [
             executor.submit(

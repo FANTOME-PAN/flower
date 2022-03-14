@@ -30,39 +30,42 @@ from flwr.common import (
 
 
 def setup_param(client, setup_param_ins: SetupParamIns):
-    # Assigning parameter values to object fields
-    sec_agg_param_dict = setup_param_ins.sec_agg_param_dict
-    client.sample_num = sec_agg_param_dict['sample_num']
-    client.sec_agg_id = sec_agg_param_dict['sec_agg_id']
-    client.share_num = sec_agg_param_dict['share_num']
-    client.threshold = sec_agg_param_dict['threshold']
-    client.clipping_range = sec_agg_param_dict['clipping_range']
-    client.target_range = sec_agg_param_dict['target_range']
-    client.mod_range = sec_agg_param_dict['mod_range']
-    client.max_weights_factor = sec_agg_param_dict['max_weights_factor']
+    try:
+        # Assigning parameter values to object fields
+        sec_agg_param_dict = setup_param_ins.sec_agg_param_dict
+        client.sample_num = sec_agg_param_dict['sample_num']
+        client.sec_agg_id = sec_agg_param_dict['sec_agg_id']
+        client.share_num = sec_agg_param_dict['share_num']
+        client.threshold = sec_agg_param_dict['threshold']
+        client.clipping_range = sec_agg_param_dict['clipping_range']
+        client.target_range = sec_agg_param_dict['target_range']
+        client.mod_range = sec_agg_param_dict['mod_range']
+        client.max_weights_factor = sec_agg_param_dict['max_weights_factor']
 
-    fit_res = client.client.fit(setup_param_ins.fit_ins)
-    client.diff = parameters_to_weights(fit_res.parameters)
-    client.weights_factor = fit_res.num_examples
-    new_t = sec_agg_primitives.get_alpha_percent_weights(client.diff, sec_agg_param_dict['alpha'])
-    new_target_range = min(client.clipping_range, new_t) / client.clipping_range * client.target_range
-    target_bits = math.ceil(math.log2(new_target_range))
+        fit_res = client.client.fit(setup_param_ins.fit_ins)
+        client.diff = parameters_to_weights(fit_res.parameters)
+        client.weights_factor = fit_res.num_examples
+        new_t = sec_agg_primitives.get_alpha_percent_weights(client.diff, sec_agg_param_dict['alpha'])
+        new_target_range = min(client.clipping_range, new_t) / client.clipping_range * client.target_range
+        target_bits = math.ceil(math.log2(new_target_range))
 
-    # Testing , to be removed================================================
-    client.test = 0
-    if 'test' in sec_agg_param_dict and sec_agg_param_dict['test'] == 1:
-        client.test = 1
-        client.test_vector_shape = [(sec_agg_param_dict['test_vector_dimension'],)]
-        client.test_dropout_value = sec_agg_param_dict['test_dropout_value']
-    # End =================================================================
+        # Testing , to be removed================================================
+        client.test = 0
+        if 'test' in sec_agg_param_dict and sec_agg_param_dict['test'] == 1:
+            client.test = 1
+            client.test_vector_shape = [(sec_agg_param_dict['test_vector_dimension'],)]
+            client.test_dropout_value = sec_agg_param_dict['test_dropout_value']
+        # End =================================================================
 
-    # key is the sec_agg_id of another client (int)
-    # value is the secret share we possess that contributes to the client's secret (bytes)
-    client.b_share_dict = {}
-    client.sk1_share_dict = {}
-    client.shared_key_2_dict = {}
-    log(INFO, "SecAgg Stage 0 Completed: Parameters Set Up")
-    return SetupParamRes(target_bits=target_bits)
+        # key is the sec_agg_id of another client (int)
+        # value is the secret share we possess that contributes to the client's secret (bytes)
+        client.b_share_dict = {}
+        client.sk1_share_dict = {}
+        client.shared_key_2_dict = {}
+        log(INFO, "SecAgg Stage 0 Completed: Parameters Set Up")
+        return SetupParamRes(target_bits=target_bits)
+    except:
+        traceback.print_exc()
 
 
 def ask_keys(client, ask_keys_ins: AskKeysIns) -> AskKeysRes:
