@@ -40,10 +40,12 @@ class CifarClient(fl.client.NumPyClient):
         self.available_keys = [k for k, v in self.model.state_dict().items() if v.shape != ()]
 
     def get_parameters(self):
-        ret = [val.detach().cpu().numpy() for _, val in self.model.state_dict().items() if val.shape != ()]
+        tmp_dict = self.model.state_dict()
+        # ret = [val.detach().cpu().numpy() for _, val in self.model.state_dict().items() if val.shape != ()]
+        ret = [tmp_dict[k].detach().cpu().numpy() for k in self.available_keys]
         for i, arr in enumerate(ret):
             if arr.max() > 3:
-                print(f"Client {self.cid}: exceeding range in f{self.available_keys[i]} with max {arr.max()}")
+                print(f"Client {self.cid}: exceeding range in {self.available_keys[i]} with max {arr.max()}")
         return ret
 
     def set_parameters(self, parameters):
@@ -55,6 +57,7 @@ class CifarClient(fl.client.NumPyClient):
 
     def fit(self, parameters, config):
         # Load model parameters
+        assert len(parameters) == len(self.available_keys)
         parameters = [o for o in parameters if o.shape != ()]
         self.set_parameters(parameters)
 
