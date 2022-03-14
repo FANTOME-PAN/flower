@@ -58,6 +58,7 @@ def start_server(exp_name=None,
                             'max_weights_factor': 1,
                             'target_range': 1 << 16,
                             'clipping_range': 3,
+                            'alpha': 1e-6
                             })
 
     server = fl.server.Server(client_manager=client_manager, strategy=strategy)

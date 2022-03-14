@@ -100,11 +100,12 @@ class Disconnect:
 @dataclass
 class SetupParamIns:
     sec_agg_param_dict: Dict[str, Scalar]
+    fit_ins: FitIns
 
 
 @dataclass
 class SetupParamRes:
-    pass
+    target_bits: int
 
 
 @dataclass
@@ -140,7 +141,6 @@ class ShareKeysRes:
 @dataclass
 class AskVectorsIns:
     ask_vectors_in_list: List[ShareKeysPacket]
-    fit_ins: FitIns
 
 
 @dataclass

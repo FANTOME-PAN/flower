@@ -101,6 +101,8 @@ class ReducedSecAgg(FedAvg, SecAggStrategy):
                         on_evaluate_config_fn=on_evaluate_config_fn,
                         accept_failures=accept_failures,
                         initial_parameters=initial_parameters)
+        if 'alpha' not in sec_agg_param_dict.keys():
+            sec_agg_param_dict['alpha'] = 1e-6
         self.sec_agg_param_dict = sec_agg_param_dict
 
     def get_sec_agg_param(self) -> Dict[str, int]:

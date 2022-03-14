@@ -67,15 +67,20 @@ def sec_agg_fit_round(server, rnd: int
     log(INFO, "SecAgg Stage 0: Setting up Params")
     setup_param_results_and_failures = setup_param(
         clients=setup_param_clients,
-        sec_agg_param_dict=sec_agg_param_dict
+        sec_agg_param_dict=sec_agg_param_dict,
+        client_instructions=client_instructions
     )
     setup_param_results = setup_param_results_and_failures[0]
     ask_keys_clients: Dict[int, ClientProxy] = {}
+    target_bits: Dict[int, int] = {}
     if len(setup_param_results) < sec_agg_param_dict['min_num']:
         raise Exception("Not enough available clients after setup param stage")
+    setup_param_results = dict(setup_param_results)
     for idx, client in setup_param_clients.items():
-        if client in [result[0] for result in setup_param_results]:
+        if client in setup_param_results.keys():
             ask_keys_clients[idx] = client
+            target_bits[idx] = setup_param_results[client].target_bits
+            log(INFO, f'Received {target_bits[idx]} target bits from Client {idx}')
 
     # === Stage 1: Ask Public Keys ===
     log(INFO, "SecAgg Stage 1: Asking Keys")
@@ -285,13 +290,13 @@ def process_sec_agg_param_dict(sec_agg_param_dict: Dict[str, Scalar]) -> Dict[st
 
 
 def setup_param(
-    clients: List[ClientProxy],
-    sec_agg_param_dict: Dict[str, Scalar]
+    clients: Dict[int, ClientProxy],
+    sec_agg_param_dict: Dict[str, Scalar],
+    client_instructions
 ) -> SetupParamResultsAndFailures:
     def sec_agg_param_dict_with_sec_agg_id(sec_agg_param_dict: Dict[str, Scalar], sec_agg_id: int):
         new_sec_agg_param_dict = sec_agg_param_dict.copy()
-        new_sec_agg_param_dict[
-            'sec_agg_id'] = sec_agg_id
+        new_sec_agg_param_dict['sec_agg_id'] = sec_agg_id
         return new_sec_agg_param_dict
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [
@@ -302,6 +307,7 @@ def setup_param(
                     SetupParamIns(
                         sec_agg_param_dict=sec_agg_param_dict_with_sec_agg_id(
                             sec_agg_param_dict, idx),
+                        fit_ins=client_instructions[idx]
                     ),
                 ),
             )
@@ -321,7 +327,7 @@ def setup_param(
     return results, failures
 
 
-def setup_param_client(client: ClientProxy, setup_param_msg: SetupParamIns) -> Tuple[ClientProxy, SetupParamRes]:
+def setup_param_client(client: SecAggClient, setup_param_msg: SetupParamIns) -> Tuple[ClientProxy, SetupParamRes]:
     setup_param_res = client.setup_param(setup_param_msg)
     return client, setup_param_res
 
@@ -390,7 +396,7 @@ def ask_vectors(clients: List[ClientProxy], forward_packet_list_dict: Dict[int, 
         futures = [
             executor.submit(
                 lambda p: ask_vectors_client(*p),
-                (client, forward_packet_list_dict[idx], client_instructions[idx]),
+                (client, forward_packet_list_dict[idx]),
             )
             for idx, client in clients.items()
         ]

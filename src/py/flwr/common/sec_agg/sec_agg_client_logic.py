@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+import math
 import numpy as np
 from flwr.common.parameter import parameters_to_weights, weights_to_parameters
 from flwr.common.sec_agg.sec_agg_primitives import check_clipping_range
@@ -40,6 +41,13 @@ def setup_param(client, setup_param_ins: SetupParamIns):
     client.mod_range = sec_agg_param_dict['mod_range']
     client.max_weights_factor = sec_agg_param_dict['max_weights_factor']
 
+    fit_res = client.client.fit(setup_param_ins.fit_ins)
+    client.diff = parameters_to_weights(fit_res.parameters)
+    client.weights_factor = fit_res.num_examples
+    new_t = sec_agg_primitives.get_alpha_percent_weights(client.diff, sec_agg_param_dict['alpha'])
+    new_target_range = min(client.clipping_range, new_t) / client.clipping_range * client.target_range
+    target_bits = math.ceil(math.log2(new_target_range))
+
     # Testing , to be removed================================================
     client.test = 0
     if 'test' in sec_agg_param_dict and sec_agg_param_dict['test'] == 1:
@@ -54,7 +62,7 @@ def setup_param(client, setup_param_ins: SetupParamIns):
     client.sk1_share_dict = {}
     client.shared_key_2_dict = {}
     log(INFO, "SecAgg Stage 0 Completed: Parameters Set Up")
-    return SetupParamRes()
+    return SetupParamRes(target_bits=target_bits)
 
 
 def ask_keys(client, ask_keys_ins: AskKeysIns) -> AskKeysRes:
@@ -130,7 +138,6 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
     # try:
     # Receive shares and fit model
     packet_list = ask_vectors_ins.ask_vectors_in_list
-    fit_ins = ask_vectors_ins.fit_ins
     available_clients: List[int] = []
 
     if len(packet_list) + 1 < client.threshold:
@@ -163,10 +170,8 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
         client.sk1_share_dict[source] = plaintext_sk1_share
 
     # fit client
-    fit_res = client.client.fit(fit_ins)
-    parameters = fit_res.parameters
-    weights = parameters_to_weights(parameters)
-    weights_factor = fit_res.num_examples
+    weights = client.diff
+    weights_factor = client.weights_factor
 
     # Quantize weight update vector
     quantized_weights = sec_agg_primitives.quantize(
