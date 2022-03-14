@@ -187,9 +187,8 @@ def check_error(msg: ClientMessage.SecAggRes):
 def setup_param_ins_to_proto(
     setup_param_ins: typing.SetupParamIns,
 ) -> ServerMessage.SecAggMsg:
-    fit_ins = ServerMessage.SecAggMsg.AskVectors.FitIns(parameters=parameters_to_proto(
+    fit_ins = ServerMessage.SecAggMsg.SetupParam.FitIns(parameters=parameters_to_proto(
         setup_param_ins.fit_ins.parameters), config=metrics_to_proto(setup_param_ins.fit_ins.config))
-
     return ServerMessage.SecAggMsg(
         setup_param=ServerMessage.SecAggMsg.SetupParam(
             sec_agg_param_dict=metrics_to_proto(setup_param_ins.sec_agg_param_dict),
