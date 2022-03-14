@@ -187,9 +187,13 @@ def check_error(msg: ClientMessage.SecAggRes):
 def setup_param_ins_to_proto(
     setup_param_ins: typing.SetupParamIns,
 ) -> ServerMessage.SecAggMsg:
+    fit_ins = ServerMessage.SecAggMsg.AskVectors.FitIns(parameters=parameters_to_proto(
+        setup_param_ins.fit_ins.parameters), config=metrics_to_proto(setup_param_ins.fit_ins.config))
+
     return ServerMessage.SecAggMsg(
         setup_param=ServerMessage.SecAggMsg.SetupParam(
-            sec_agg_param_dict=metrics_to_proto(setup_param_ins.sec_agg_param_dict)
+            sec_agg_param_dict=metrics_to_proto(setup_param_ins.sec_agg_param_dict),
+            fit_ins=fit_ins
         )
     )
 
@@ -197,21 +201,25 @@ def setup_param_ins_to_proto(
 def setup_param_ins_from_proto(
     setup_param_msg: ServerMessage.SecAggMsg,
 ) -> typing.SetupParamIns:
-    print("REACHING HERE!!!!!!!!")
+    fit_ins = typing.FitIns(parameters=parameters_from_proto(setup_param_msg.ask_vectors.fit_ins.parameters),
+                            config=metrics_from_proto(setup_param_msg.ask_vectors.fit_ins.config))
     return typing.SetupParamIns(
         sec_agg_param_dict=metrics_from_proto(
-            setup_param_msg.setup_param.sec_agg_param_dict)
+            setup_param_msg.setup_param.sec_agg_param_dict),
+        fit_ins=fit_ins
     )
 
 
 def setup_param_res_to_proto(setup_param_res: typing.SetupParamRes):
     return ClientMessage.SecAggRes(
-        setup_param_res=ClientMessage.SecAggRes.SetupParamRes()
+        setup_param_res=ClientMessage.SecAggRes.SetupParamRes(
+            target_bits=setup_param_res.target_bits
+        )
     )
 
 
 def setup_param_res_from_proto(setup_param_res: ServerMessage.SecAggMsg) -> typing.SetupParamRes:
-    return typing.SetupParamRes()
+    return typing.SetupParamRes(target_bits=setup_param_res.target_bits)
 # === Ask Keys ===
 
 
