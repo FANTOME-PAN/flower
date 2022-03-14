@@ -197,6 +197,7 @@ def setup_param_ins_to_proto(
 def setup_param_ins_from_proto(
     setup_param_msg: ServerMessage.SecAggMsg,
 ) -> typing.SetupParamIns:
+    print("REACHING HERE!!!!!!!!")
     return typing.SetupParamIns(
         sec_agg_param_dict=metrics_from_proto(
             setup_param_msg.setup_param.sec_agg_param_dict)
