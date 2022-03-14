@@ -222,13 +222,15 @@ def share_keys_plaintext_separate(plaintext: bytes) -> Tuple[int, int, bytes, by
 def quantize(weight: Weights, clipping_range: float, target_range: int) -> Weights:
     quantized_list = []
     check_clipping_range(weight, clipping_range)
-    f = np.vectorize(lambda x:  min(target_range-1, (sorted((-clipping_range, x, clipping_range))
-                                                     [1]+clipping_range)*target_range/(2*clipping_range)))
+    quantizer = target_range/(2*clipping_range)
     for arr in weight:
-        if arr.size == 0:
-            quantized_list.append(arr.astype(int))
-        else:
-            quantized_list.append(f(arr).astype(int))
+        # stochastic quantization
+        tmp = (np.clip(arr, -clipping_range, clipping_range) + clipping_range) * quantizer
+        quantized = np.ceil(tmp).astype(int)
+        rand_arr = np.random.rand(*quantized.shape)
+        # p(Q(x))
+        quantized[rand_arr < quantized - tmp] -= 1
+        quantized_list.append(quantized)
     return quantized_list
 
 
