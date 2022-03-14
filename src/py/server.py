@@ -12,7 +12,7 @@ import data_partition
 from collections import OrderedDict
 from utils import test
 from flwr.server.strategy import FedAvg
-from model import MobileNet
+from model import build_model
 # from flwr.server.strategy.sec_agg_fedavg import SecAggFedAvg
 from strategy import ReducedSecAgg
 
@@ -58,7 +58,7 @@ def start_server(exp_name=None,
                             'max_weights_factor': 1,
                             'target_range': 1 << 24,
                             'clipping_range': 16,
-                            'alpha': 1e-6
+                            'alpha': 0
                             })
 
     server = fl.server.Server(client_manager=client_manager, strategy=strategy)
@@ -101,7 +101,7 @@ def get_eval_fn(testset: torchvision.datasets.CIFAR10):
 
     def evaluate(weights: fl.common.Weights):
         """Use the entire CIFAR-10 test set for evaluation."""
-        model = MobileNet(10)
+        model = build_model()
         if len(weights) < len(model.state_dict()):
             keys = [k for k, v in model.state_dict().items() if v.shape != ()]
         else:

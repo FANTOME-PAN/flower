@@ -14,7 +14,7 @@ from flwr.common import EvaluateIns, EvaluateRes, FitIns, FitRes, ParametersRes,
 from flwr.common import parameters_to_weights, weights_to_parameters
 
 from data_partition import load_local_partitioned_data, load_sample_data
-from model import MobileNet
+from model import build_model
 from utils import train, test, get_sample_result
 from flwr.common.sec_agg.sec_agg_primitives import weights_subtraction
 from flwr.common.parameter import weights_to_parameters, parameters_to_weights
@@ -105,7 +105,7 @@ def start_client(client_id, num_partitions, iid_fraction=1.0,
             break
     device_name = 'cuda:' + str(cuda_id)
     DEVICE = torch.device(device_name)
-    model = MobileNet(10)
+    model = build_model()
     model.to(DEVICE)
 
     # Start client
