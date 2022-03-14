@@ -318,6 +318,7 @@ def setup_param(
     failures: List[BaseException] = []
     for future in futures:
         failure = future.exception()
+        print(failure)
         if failure is not None:
             failures.append(failure)
         else:
