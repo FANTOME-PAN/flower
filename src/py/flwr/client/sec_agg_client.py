@@ -34,6 +34,7 @@ class SecAggClient(Client):
         self.client = c
         self.diff = None
         self.weights_factor = 0
+        self.target_bits = 0
 
     def get_parameters(self) -> ParametersRes:
         """Return the current local model parameters."""

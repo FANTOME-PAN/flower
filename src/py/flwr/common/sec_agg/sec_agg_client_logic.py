@@ -47,6 +47,7 @@ def setup_param(client, setup_param_ins: SetupParamIns):
     new_t = sec_agg_primitives.get_alpha_percent_weights(client.diff, sec_agg_param_dict['alpha'])
     new_target_range = min(client.clipping_range, new_t) / client.clipping_range * client.target_range
     target_bits = math.ceil(math.log2(new_target_range))
+    client.target_bits = target_bits
 
     # Testing , to be removed================================================
     client.test = 0
@@ -174,8 +175,8 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
     weights_factor = client.weights_factor
 
     # Quantize weight update vector
-    quantized_weights = sec_agg_primitives.quantize(
-        weights, client.clipping_range, client.target_range)
+    quantized_weights = sec_agg_primitives.quantize_unbounded(
+        weights, client.clipping_range, client.target_range, (1 << client.target_bits) * client.sample_num)
     # weights factor cannoot exceed maximum
     if weights_factor > client.max_weights_factor:
         weights_factor = client.max_weights_factor
