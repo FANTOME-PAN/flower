@@ -319,6 +319,7 @@ def setup_param(
     for future in futures:
         failure = future.exception()
         if failure is not None:
+            print(failure)
             failures.append(failure)
         else:
             # Success case
