@@ -55,6 +55,7 @@ class CifarClient(fl.client.NumPyClient):
 
     def fit(self, parameters, config):
         # Load model parameters
+        parameters = [o for o in parameters if o.shape != ()]
         self.set_parameters(parameters)
 
         # Get training config
