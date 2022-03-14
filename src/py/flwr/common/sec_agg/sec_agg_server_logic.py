@@ -218,17 +218,17 @@ def sec_agg_fit_round(server, rnd: int
     aggregated_vector = sec_agg_primitives.reverse_quantize(
         masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'])
     saved_weights = parameters_to_weights(server.parameters)
-    ptr = 0
-    for i in range(len(saved_weights)):
-        if saved_weights[i].shape == ():
-            continue
-        saved_weights[i] += aggregated_vector[ptr]
-        if saved_weights[i].max() > 4:
-            log(INFO, f"Server's global model contains large value parameter {max(saved_weights[i])}")
-        ptr += 1
-    print(ptr)
-    # aggregated_vector = sec_agg_primitives.weights_addition(aggregated_vector, parameters_to_weights(server.parameters))
-    aggregated_parameters = weights_to_parameters(saved_weights)
+    # ptr = 0
+    # for i in range(len(saved_weights)):
+    #     if saved_weights[i].shape == ():
+    #         continue
+    #     saved_weights[i] += aggregated_vector[ptr]
+    #     if saved_weights[i].max() > 4:
+    #         log(INFO, f"Server's global model contains large value parameter {max(saved_weights[i])}")
+    #     ptr += 1
+    # print(ptr)
+    aggregated_vector = sec_agg_primitives.weights_addition(aggregated_vector, saved_weights)
+    aggregated_parameters = weights_to_parameters(aggregated_vector)
     return aggregated_parameters, None, None
 
 
