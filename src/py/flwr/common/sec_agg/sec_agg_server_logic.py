@@ -223,7 +223,10 @@ def sec_agg_fit_round(server, rnd: int
         if saved_weights[i].shape == ():
             continue
         saved_weights[i] += aggregated_vector[ptr]
+        if max(saved_weights[i]) > 4:
+            log(INFO, f"Server's global model contains large value parameter {max(saved_weights[i])}")
         ptr += 1
+    print(ptr)
     # aggregated_vector = sec_agg_primitives.weights_addition(aggregated_vector, parameters_to_weights(server.parameters))
     aggregated_parameters = weights_to_parameters(saved_weights)
     return aggregated_parameters, None, None
