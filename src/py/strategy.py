@@ -20,6 +20,7 @@ Paper: https://eprint.iacr.org/2017/281.pdf
 
 from logging import WARNING
 from typing import Callable, Dict, List, Optional, Tuple
+import torch
 from functools import reduce
 import numpy as np
 from flwr.common import (
@@ -39,6 +40,7 @@ from flwr.server.client_manager import ClientManager
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy.fedavg import FedAvg
 from flwr.server.strategy.sec_agg_strategy import SecAggStrategy
+from model import build_model
 
 DEPRECATION_WARNING = """
 DEPRECATION WARNING: deprecated `eval_fn` return format
@@ -68,6 +70,12 @@ instead. Use
 
 to easily transform `Weights` to `Parameters`.
 """
+
+
+def init_weights(m):
+    if isinstance(m, torch.nn.Linear):
+        torch.nn.init.xavier_uniform(m.weight)
+        m.bias.data.fill_(0.01)
 
 
 class ReducedSecAgg(FedAvg, SecAggStrategy):
@@ -104,6 +112,10 @@ class ReducedSecAgg(FedAvg, SecAggStrategy):
         if 'alpha' not in sec_agg_param_dict.keys():
             sec_agg_param_dict['alpha'] = 1e-6
         self.sec_agg_param_dict = sec_agg_param_dict
+        net = build_model()
+        net.apply(init_weights)
+        net.state_dict().items()
+        self.initial_parameters = weights_to_parameters([v.detach().cpu().numpy() for k, v in net if v.shape != ()])
 
     def get_sec_agg_param(self) -> Dict[str, int]:
         return self.sec_agg_param_dict.copy()
