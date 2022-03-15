@@ -272,12 +272,27 @@ def check_clipping_range(weight: Weights, clipping_range: float):
 
 def reverse_quantize(weight: Weights, clipping_range: float, target_range: int) -> Weights:
     reverse_quantized_list = []
-    f = np.vectorize(lambda x:  (x)/target_range*(2*clipping_range)-clipping_range)
+    factor = 1. / target_range * (2*clipping_range)
     for arr in weight:
         if arr.size == 0:
             reverse_quantized_list.append(arr.astype(float))
         else:
-            reverse_quantized_list.append(f(arr.astype(float)))
+            arr = arr.astype(float) * factor - clipping_range
+            reverse_quantized_list.append(arr)
+    return reverse_quantized_list
+
+
+def reverse_quantize_unbounded(weight: Weights, clipping_range: float, target_range: int, mod_range: int) -> Weights:
+    reverse_quantized_list = []
+    factor = 1. / target_range * (2*clipping_range)
+    for arr in weight:
+        if arr.size == 0:
+            reverse_quantized_list.append(arr.astype(float))
+        else:
+            msk = (arr & (mod_range >> 1)) != 0
+            arr[msk] = arr[msk] | ~(mod_range - 1)
+            arr = arr.astype(float) * factor - clipping_range
+            reverse_quantized_list.append(arr)
     return reverse_quantized_list
 
 # Weight Manipulation =============================================================
