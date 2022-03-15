@@ -20,7 +20,7 @@ from flwr.server.client_proxy import ClientProxy
 from flwr.common.sec_agg import sec_agg_primitives
 from flwr.client.sec_agg_client import SecAggClient
 import concurrent.futures
-
+import numpy as np
 from flwr.common.logger import log
 
 SetupParamResultsAndFailures = Tuple[
@@ -81,8 +81,10 @@ def sec_agg_fit_round(server, rnd: int
         if client in setup_param_results.keys():
             ask_keys_clients[idx] = client
             target_bits[idx] = setup_param_results[client].target_bits
-            log(INFO, f'Received {target_bits[idx]} target bits from Client {idx}')
+            # log(INFO, f'Received {target_bits[idx]} target bits from Client {idx}')
 
+    server.tips += [np.array([_ for _ in target_bits.values()]).mean()]
+    log(INFO, f"Received average {server.tips[-1]} / 24 bits")
     # === Stage 1: Ask Public Keys ===
     log(INFO, "SecAgg Stage 1: Asking Keys")
     ask_keys_results_and_failures = ask_keys(ask_keys_clients)

@@ -64,7 +64,7 @@ def start_server(exp_name=None,
                             })
 
     server = fl.server.Server(client_manager=client_manager, strategy=strategy)
-
+    server.tips = []
     # Run server
     print(f"Starting gRPC server on {server_address}...")
     grpc_server = start_insecure_grpc_server(
@@ -80,6 +80,8 @@ def start_server(exp_name=None,
     # Write training history to file
     f = open(log_dict + exp_name, "w")
     f.write(hist.__repr__())
+    f.write('\n')
+    f.write(server.tips.__repr__())
     f.close()
 
     # Stop the gRPC server
