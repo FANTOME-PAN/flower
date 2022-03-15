@@ -52,13 +52,14 @@ def start_server(exp_name=None,
         eval_fn=get_eval_fn(testset),
         on_fit_config_fn=generate_config(epochs, batch_size),
         on_evaluate_config_fn=generate_config(epochs, batch_size),
-        sec_agg_param_dict={"min_num": min_sample_size,
+        sec_agg_param_dict={
+                            "min_num": min_sample_size,
                             "share_num": 5,
                             "threshold": 4,
                             'max_weights_factor': 1,
                             'target_range': 1 << 24,
                             'clipping_range': 16,
-                            'alpha': 0
+                            'alpha': 1e-9
                             })
 
     server = fl.server.Server(client_manager=client_manager, strategy=strategy)

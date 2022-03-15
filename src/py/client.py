@@ -54,14 +54,14 @@ class CifarClient(fl.client.NumPyClient):
             if arr.max() > 3:
                 print(f"Set Client {self.cid}: exceeding range in {self.available_keys[i]} with max {arr.max()}")
         params_dict = zip(self.available_keys, [o for o in parameters if o.shape != ()])
-        state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict if v.shape != ()})
+        state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
         # print([o.shape for o in parameters][:8])
         self.model.load_state_dict(state_dict, strict=False)
 
     def fit(self, parameters, config):
         # Load model parameters
-        assert len(parameters) == len(self.available_keys)
-        parameters = [o for o in parameters if o.shape != ()]
+        # assert len(parameters) == len(self.available_keys)
+        # parameters = [o for o in parameters if o.shape != ()]
         self.set_parameters(parameters)
 
         # Get training config

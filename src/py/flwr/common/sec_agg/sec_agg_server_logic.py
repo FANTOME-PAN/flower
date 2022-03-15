@@ -60,6 +60,7 @@ def sec_agg_fit_round(server, rnd: int
     log(INFO, "Get sec_agg_param_dict from strategy")
     sec_agg_param_dict = server.strategy.get_sec_agg_param()
     sec_agg_param_dict["sample_num"] = len(client_instruction_list)
+    print("number of samples = %d" % len(client_instruction_list))
     sec_agg_param_dict = process_sec_agg_param_dict(sec_agg_param_dict)
 
     # === Stage 0: Setup ===
@@ -264,7 +265,7 @@ def process_sec_agg_param_dict(sec_agg_param_dict: Dict[str, Scalar]) -> Dict[st
 
     # Maximum number of example trained set to 1000
     if 'max_weights_factor' not in sec_agg_param_dict:
-        sec_agg_param_dict['max_weights_factor'] = 20000
+        sec_agg_param_dict['max_weights_factor'] = 1
 
     # Quantization parameters
     if 'clipping_range' not in sec_agg_param_dict:
