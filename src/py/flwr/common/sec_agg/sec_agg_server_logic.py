@@ -60,6 +60,7 @@ def sec_agg_fit_round(server, rnd: int
     log(INFO, "Get sec_agg_param_dict from strategy")
     sec_agg_param_dict = server.strategy.get_sec_agg_param()
     sec_agg_param_dict["sample_num"] = len(client_instruction_list)
+    sec_agg_param_dict["disable_masks"] = 1 if server.disable_masks else 0
     print("number of samples = %d" % len(client_instruction_list))
     sec_agg_param_dict = process_sec_agg_param_dict(sec_agg_param_dict)
 
@@ -87,53 +88,60 @@ def sec_agg_fit_round(server, rnd: int
     log(INFO, f"Received average {server.tips[-1]} / 24 bits")
     # === Stage 1: Ask Public Keys ===
     log(INFO, "SecAgg Stage 1: Asking Keys")
-    ask_keys_results_and_failures = ask_keys(ask_keys_clients)
+    if not server.disable_masks:
+        ask_keys_results_and_failures = ask_keys(ask_keys_clients)
 
-    public_keys_dict: Dict[int, AskKeysRes] = {}
-    ask_keys_results = ask_keys_results_and_failures[0]
-    if len(ask_keys_results) < sec_agg_param_dict['min_num']:
-        raise Exception("Not enough available clients after ask keys stage")
-    share_keys_clients: Dict[int, ClientProxy] = {}
+        public_keys_dict: Dict[int, AskKeysRes] = {}
+        ask_keys_results = ask_keys_results_and_failures[0]
+        if len(ask_keys_results) < sec_agg_param_dict['min_num']:
+            raise Exception("Not enough available clients after ask keys stage")
+        share_keys_clients: Dict[int, ClientProxy] = {}
 
-    # Build public keys dict
-    for idx, client in ask_keys_clients.items():
-        if client in [result[0] for result in ask_keys_results]:
-            pos = [result[0] for result in ask_keys_results].index(client)
-            public_keys_dict[idx] = ask_keys_results[pos][1]
-            share_keys_clients[idx] = client
+        # Build public keys dict
+        for idx, client in ask_keys_clients.items():
+            if client in [result[0] for result in ask_keys_results]:
+                pos = [result[0] for result in ask_keys_results].index(client)
+                public_keys_dict[idx] = ask_keys_results[pos][1]
+                share_keys_clients[idx] = client
 
     # === Stage 2: Share Keys ===
     log(INFO, "SecAgg Stage 2: Sharing Keys")
-    share_keys_results_and_failures = share_keys(
-        share_keys_clients, public_keys_dict, sec_agg_param_dict[
-            'sample_num'], sec_agg_param_dict['share_num']
-    )
-    share_keys_results = share_keys_results_and_failures[0]
-    if len(share_keys_results) < sec_agg_param_dict['min_num']:
-        raise Exception("Not enough available clients after share keys stage")
+    if not server.disable_masks:
+        share_keys_results_and_failures = share_keys(
+            share_keys_clients, public_keys_dict, sec_agg_param_dict[
+                'sample_num'], sec_agg_param_dict['share_num']
+        )
+        share_keys_results = share_keys_results_and_failures[0]
+        if len(share_keys_results) < sec_agg_param_dict['min_num']:
+            raise Exception("Not enough available clients after share keys stage")
 
-    # Build forward packet list dictionary
-    total_packet_list: List[ShareKeysPacket] = []
-    forward_packet_list_dict: Dict[int, List[ShareKeysPacket]] = {}
-    ask_vectors_clients: Dict[int, ClientProxy] = {}
-    for idx, client in share_keys_clients.items():
-        if client in [result[0] for result in share_keys_results]:
-            pos = [result[0] for result in share_keys_results].index(client)
-            ask_vectors_clients[idx] = client
-            packet_list = share_keys_results[pos][1].share_keys_res_list
-            total_packet_list += packet_list
+        # Build forward packet list dictionary
+        total_packet_list: List[ShareKeysPacket] = []
+        forward_packet_list_dict: Dict[int, List[ShareKeysPacket]] = {}
+        ask_vectors_clients: Dict[int, ClientProxy] = {}
+        for idx, client in share_keys_clients.items():
+            if client in [result[0] for result in share_keys_results]:
+                pos = [result[0] for result in share_keys_results].index(client)
+                ask_vectors_clients[idx] = client
+                packet_list = share_keys_results[pos][1].share_keys_res_list
+                total_packet_list += packet_list
 
-    for idx in ask_vectors_clients.keys():
-        forward_packet_list_dict[idx] = []
+        for idx in ask_vectors_clients.keys():
+            forward_packet_list_dict[idx] = []
 
-    for packet in total_packet_list:
-        destination = packet.destination
-        if destination in ask_vectors_clients.keys():
-            forward_packet_list_dict[destination].append(packet)
+        for packet in total_packet_list:
+            destination = packet.destination
+            if destination in ask_vectors_clients.keys():
+                forward_packet_list_dict[destination].append(packet)
 
     # === Stage 3: Ask Vectors ===
     log(INFO, "SecAgg Stage 3: Asking Vectors")
-    log(INFO, f"num clients: {len(ask_vectors_clients)}, fwd_lst: {len(forward_packet_list_dict)}, ins: {len(client_instructions)}")
+    if server.disable_masks:
+        forward_packet_list_dict: Dict[int, List[ShareKeysPacket]] = {}
+        ask_vectors_clients = setup_param_clients
+        for idx in setup_param_clients.keys():
+            forward_packet_list_dict[idx] = []
+    log(INFO, f"num clients: {len(ask_vectors_clients)}, fwd_lst: {len(forward_packet_list_dict)}")
     ask_vectors_results_and_failures = ask_vectors(
         ask_vectors_clients, forward_packet_list_dict)
     ask_vectors_results = ask_vectors_results_and_failures[0]
@@ -159,57 +167,58 @@ def sec_agg_fit_round(server, rnd: int
 
     # === Stage 4: Unmask Vectors ===
     log(INFO, "SecAgg Stage 4: Unmasking Vectors")
-    unmask_vectors_results_and_failures = unmask_vectors(
-        unmask_vectors_clients, dropout_clients, sec_agg_param_dict['sample_num'], sec_agg_param_dict['share_num'])
-    unmask_vectors_results = unmask_vectors_results_and_failures[0]
+    if not server.disable_masks:
+        unmask_vectors_results_and_failures = unmask_vectors(
+            unmask_vectors_clients, dropout_clients, sec_agg_param_dict['sample_num'], sec_agg_param_dict['share_num'])
+        unmask_vectors_results = unmask_vectors_results_and_failures[0]
 
-    # Build collected shares dict
-    collected_shares_dict: Dict[int, List[bytes]] = {}
-    for idx in ask_vectors_clients.keys():
-        collected_shares_dict[idx] = []
+        # Build collected shares dict
+        collected_shares_dict: Dict[int, List[bytes]] = {}
+        for idx in ask_vectors_clients.keys():
+            collected_shares_dict[idx] = []
 
-    if len(unmask_vectors_results) < sec_agg_param_dict['min_num']:
-        raise Exception("Not enough available clients after unmask vectors stage")
-    for result in unmask_vectors_results:
-        unmask_vectors_res = result[1]
-        for owner_id, share in unmask_vectors_res.share_dict.items():
-            collected_shares_dict[owner_id].append(share)
+        if len(unmask_vectors_results) < sec_agg_param_dict['min_num']:
+            raise Exception("Not enough available clients after unmask vectors stage")
+        for result in unmask_vectors_results:
+            unmask_vectors_res = result[1]
+            for owner_id, share in unmask_vectors_res.share_dict.items():
+                collected_shares_dict[owner_id].append(share)
 
-    # Remove mask for every client who is available before ask vectors stage,
-    # Divide vector by first element
-    for client_id, share_list in collected_shares_dict.items():
-        if len(share_list) < sec_agg_param_dict['threshold']:
-            raise Exception(
-                "Not enough shares to recover secret in unmask vectors stage")
-        secret = sec_agg_primitives.combine_shares(share_list=share_list)
-        if client_id in unmask_vectors_clients.keys():
-            # secret is an available client's b
-            private_mask = sec_agg_primitives.pseudo_rand_gen(
-                secret, sec_agg_param_dict['mod_range'], sec_agg_primitives.weights_shape(masked_vector))
-            masked_vector = sec_agg_primitives.weights_subtraction(
-                masked_vector, private_mask)
-        else:
-            # secret is a dropout client's sk1
-            neighbor_list: List[int] = []
-            if sec_agg_param_dict['share_num'] == sec_agg_param_dict['sample_num']:
-                neighbor_list = list(ask_vectors_clients.keys())
-                neighbor_list.remove(client_id)
+        # Remove mask for every client who is available before ask vectors stage,
+        # Divide vector by first element
+        for client_id, share_list in collected_shares_dict.items():
+            if len(share_list) < sec_agg_param_dict['threshold']:
+                raise Exception(
+                    "Not enough shares to recover secret in unmask vectors stage")
+            secret = sec_agg_primitives.combine_shares(share_list=share_list)
+            if client_id in unmask_vectors_clients.keys():
+                # secret is an available client's b
+                private_mask = sec_agg_primitives.pseudo_rand_gen(
+                    secret, sec_agg_param_dict['mod_range'], sec_agg_primitives.weights_shape(masked_vector))
+                masked_vector = sec_agg_primitives.weights_subtraction(
+                    masked_vector, private_mask)
             else:
-                for i in range(-int(sec_agg_param_dict['share_num'] / 2), int(sec_agg_param_dict['share_num'] / 2) + 1):
-                    if i != 0 and ((i + client_id) % sec_agg_param_dict['sample_num']) in ask_vectors_clients.keys():
-                        neighbor_list.append((i + client_id) %
-                                             sec_agg_param_dict['sample_num'])
-            for neighbor_id in neighbor_list:
-                shared_key = sec_agg_primitives.generate_shared_key(
-                    sec_agg_primitives.bytes_to_private_key(secret), sec_agg_primitives.bytes_to_public_key(public_keys_dict[neighbor_id].pk1))
-                pairwise_mask = sec_agg_primitives.pseudo_rand_gen(
-                    shared_key, sec_agg_param_dict['mod_range'], sec_agg_primitives.weights_shape(masked_vector))
-                if client_id > neighbor_id:
-                    masked_vector = sec_agg_primitives.weights_addition(
-                        masked_vector, pairwise_mask)
+                # secret is a dropout client's sk1
+                neighbor_list: List[int] = []
+                if sec_agg_param_dict['share_num'] == sec_agg_param_dict['sample_num']:
+                    neighbor_list = list(ask_vectors_clients.keys())
+                    neighbor_list.remove(client_id)
                 else:
-                    masked_vector = sec_agg_primitives.weights_subtraction(
-                        masked_vector, pairwise_mask)
+                    for i in range(-int(sec_agg_param_dict['share_num'] / 2), int(sec_agg_param_dict['share_num'] / 2) + 1):
+                        if i != 0 and ((i + client_id) % sec_agg_param_dict['sample_num']) in ask_vectors_clients.keys():
+                            neighbor_list.append((i + client_id) %
+                                                 sec_agg_param_dict['sample_num'])
+                for neighbor_id in neighbor_list:
+                    shared_key = sec_agg_primitives.generate_shared_key(
+                        sec_agg_primitives.bytes_to_private_key(secret), sec_agg_primitives.bytes_to_public_key(public_keys_dict[neighbor_id].pk1))
+                    pairwise_mask = sec_agg_primitives.pseudo_rand_gen(
+                        shared_key, sec_agg_param_dict['mod_range'], sec_agg_primitives.weights_shape(masked_vector))
+                    if client_id > neighbor_id:
+                        masked_vector = sec_agg_primitives.weights_addition(
+                            masked_vector, pairwise_mask)
+                    else:
+                        masked_vector = sec_agg_primitives.weights_subtraction(
+                            masked_vector, pairwise_mask)
     masked_vector = sec_agg_primitives.weights_mod(
         masked_vector, sec_agg_param_dict['mod_range'])
     # Divide vector by number of clients who have given us their masked vector
@@ -217,7 +226,7 @@ def sec_agg_fit_round(server, rnd: int
     # total_weights_factor, masked_vector = sec_agg_primitives.factor_weights_extract(
     #     masked_vector)
     masked_vector = sec_agg_primitives.weights_divide(
-        masked_vector, len(unmask_vectors_results))
+        masked_vector, len(setup_param_results))
     aggregated_vector = sec_agg_primitives.reverse_quantize(
         masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'])
     saved_weights = parameters_to_weights(server.parameters)

@@ -65,6 +65,7 @@ def start_server(exp_name=None,
 
     server = fl.server.Server(client_manager=client_manager, strategy=strategy)
     server.tips = []
+    server.disable_masks = True
     # Run server
     print(f"Starting gRPC server on {server_address}...")
     grpc_server = start_insecure_grpc_server(
