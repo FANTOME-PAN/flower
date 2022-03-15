@@ -30,7 +30,8 @@ def start_server(exp_name=None,
                  min_sample_size=2,
                  min_num_clients=2,
                  log_host=None,
-                 log_dict='logs/'):
+                 log_dict='logs/',
+                 alpha=1e-9):
     if not exp_name:
         exp_name = f"epoch_{epochs}_" \
                    f"clients_{min_num_clients}"
@@ -59,7 +60,7 @@ def start_server(exp_name=None,
                             'max_weights_factor': 1,
                             'target_range': 1 << 24,
                             'clipping_range': 16,
-                            'alpha': 1e-9
+                            'alpha': alpha
                             })
 
     server = fl.server.Server(client_manager=client_manager, strategy=strategy)
@@ -140,6 +141,8 @@ def main():
                         help="Number of samples per batch each client will use (default: 32)")
     parser.add_argument("--exp_name", type=str,
                         help="Name of the experiment you are running (no default)")
+    parser.add_argument("--alpha", type=float, default=1e-9,
+                        help="alpha value")
     args, _ = parser.parse_known_args()
 
     start_server(exp_name=args.exp_name,
@@ -151,7 +154,8 @@ def main():
                  min_sample_size=args.min_sample_size,
                  min_num_clients=args.min_num_clients,
                  log_host=args.log_host,
-                 log_dict=args.log_dir)
+                 log_dict=args.log_dir,
+                 alpha=args.alpha)
 
 
 if __name__ == "__main__":

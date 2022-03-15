@@ -176,11 +176,11 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
 
     # Quantize weight update vector
     tmp_mod = (1 << client.target_bits) * client.sample_num
-    quantized_weights = sec_agg_primitives.quantize_unbounded(
-        weights, client.clipping_range, client.target_range, tmp_mod)
-    for i in len(quantized_weights):
-        msk = (quantized_weights[i] & (tmp_mod >> 1)) != 0
-        quantized_weights[i][msk] = quantized_weights[i][msk] | ~(tmp_mod - 1)
+    quantized_weights = sec_agg_primitives.quantize(
+        weights, client.clipping_range, client.target_range)
+    # for i in len(quantized_weights):
+    #     msk = (quantized_weights[i] & (tmp_mod >> 1)) != 0
+    #     quantized_weights[i][msk] = quantized_weights[i][msk] | ~(tmp_mod - 1)
     # quantized_weights = sec_agg_primitives.quantize(
     #     weights, client.clipping_range, client.target_range)
     # weights factor cannoot exceed maximum
