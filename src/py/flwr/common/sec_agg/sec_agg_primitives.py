@@ -247,7 +247,6 @@ def quantize_unbounded(weight: Weights, clipping_range: float, target_range: int
         quantized[rand_arr < quantized - tmp] -= 1
         # mod k
         if bin(mod_range).count("1") == 1:  # fast mod
-            print('fast mod')
             msk = mod_range - 1
             quantized = quantized & msk
         else:
