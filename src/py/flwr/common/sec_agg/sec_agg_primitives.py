@@ -270,14 +270,21 @@ def check_clipping_range(weight: Weights, clipping_range: float):
 # Convert to float
 
 
-def reverse_quantize(weight: Weights, clipping_range: float, target_range: int) -> Weights:
+def reverse_quantize(weight: Weights, clipping_range: float, target_range: int, real_bits=None) -> Weights:
+    if real_bits is not None:
+        target_bits = round(math.log2(target_range))
+        real_bits = [target_bits - o for o in real_bits]
+        factors = [1. / (1 << b) for b in real_bits]
+        t = sum(factors) / len(real_bits) * clipping_range
+    else:
+        t = clipping_range
     reverse_quantized_list = []
     factor = 1. / target_range * (2*clipping_range)
     for arr in weight:
         if arr.size == 0:
             reverse_quantized_list.append(arr.astype(float))
         else:
-            arr = arr.astype(float) * factor - clipping_range
+            arr = arr.astype(float) * factor - t
             reverse_quantized_list.append(arr)
     return reverse_quantized_list
 
@@ -326,6 +333,12 @@ def weights_zero_generate(dimensions_list: List[Tuple]) -> Weights:
 
 def weights_addition(a: Weights, b: Weights) -> Weights:
     return [a[idx]+b[idx] for idx in range(len(a))]
+
+
+def weights_shift(a: Weights, left_shift: int) -> Weights:
+    if left_shift > 0:
+        return [a[idx] << left_shift for idx in range(len(a))]
+    return [a[idx] >> -left_shift for idx in range(len(a))]
 
 # Subtract one weight from the other
 

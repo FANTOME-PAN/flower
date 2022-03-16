@@ -176,10 +176,10 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
     weights_factor = client.weights_factor
 
     # Quantize weight update vector
-    # tmp_mod = (1 << client.target_bits) * client.sample_num
-    clipping_range = client.clipping_range * ((1 << client.target_bits) / client.target_range)
+    target_range = 1 << client.target_bits
+    clipping_range = client.clipping_range * (target_range / client.target_range)
     quantized_weights = sec_agg_primitives.quantize(
-        weights, clipping_range, client.target_range)
+        weights, clipping_range, target_range)
     # for i in len(quantized_weights):
     #     msk = (quantized_weights[i] & (tmp_mod >> 1)) != 0
     #     quantized_weights[i][msk] = quantized_weights[i][msk] | ~(tmp_mod - 1)

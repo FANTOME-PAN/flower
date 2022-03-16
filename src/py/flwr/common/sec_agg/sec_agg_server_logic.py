@@ -161,9 +161,10 @@ def sec_agg_fit_round(server, rnd: int
             pos = [result[0] for result in ask_vectors_results].index(client)
             unmask_vectors_clients[idx] = client
             dropout_clients.pop(idx)
-            client_parameters = ask_vectors_results[pos][1].parameters
+            client_weights = parameters_to_weights(ask_vectors_results[pos][1].parameters)
+            # client_weights = sec_agg_primitives.weights_shift(client_weights, 24 - target_bits[idx])
             masked_vector = sec_agg_primitives.weights_addition(
-                masked_vector, parameters_to_weights(client_parameters))
+                masked_vector, client_weights)
 
     # === Stage 4: Unmask Vectors ===
     log(INFO, "SecAgg Stage 4: Unmasking Vectors")
@@ -228,7 +229,7 @@ def sec_agg_fit_round(server, rnd: int
     masked_vector = sec_agg_primitives.weights_divide(
         masked_vector, len(setup_param_results))
     aggregated_vector = sec_agg_primitives.reverse_quantize(
-        masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'])
+        masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'], [v for v in target_bits.values()])
     saved_weights = parameters_to_weights(server.parameters)
     # ptr = 0
     # for i in range(len(saved_weights)):
