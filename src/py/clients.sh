@@ -1,5 +1,5 @@
 export PYTHONUNBUFFERED=1
-NUM_CLIENTS=4 # TODO: change the number of clients here
+NUM_CLIENTS=8 # TODO: change the number of clients here
 
 echo "Starting $NUM_CLIENTS clients."
 for ((i = 0; i < $NUM_CLIENTS; i++))
@@ -10,7 +10,7 @@ do
     # their own partition. For a large number of clients this causes a memory usage
     # spike that can cause client processes to get terminated. 
     # Staggered loading prevents this.
-    sleep 0.1s
+    sleep 8s
     python3 client.py \
       --cid=$i \
       --num_partitions=${NUM_CLIENTS} \
