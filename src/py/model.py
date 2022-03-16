@@ -159,7 +159,7 @@ class ResNet(nn.Module):
 
 
 def build_model():
-    return MobileNet(10)
+    return ResNet.ResNet18(10)
 # import torch.nn as nn
 # import math
 #

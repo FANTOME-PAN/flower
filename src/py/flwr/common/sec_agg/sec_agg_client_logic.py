@@ -170,6 +170,9 @@ def ask_vectors(client, ask_vectors_ins: AskVectorsIns) -> AskVectorsRes:
                     "Received packet destination is different from intended destination. Not supposed to happen")
             client.b_share_dict[source] = plaintext_b_share
             client.sk1_share_dict[source] = plaintext_sk1_share
+    else:
+        client.target_bits = packet_list[0].source
+        print('received target bits = %d' % client.target_bits)
 
     # fit client
     weights = client.diff

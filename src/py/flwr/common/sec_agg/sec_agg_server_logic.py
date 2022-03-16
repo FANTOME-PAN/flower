@@ -136,11 +136,16 @@ def sec_agg_fit_round(server, rnd: int
 
     # === Stage 3: Ask Vectors ===
     log(INFO, "SecAgg Stage 3: Asking Vectors")
+    max_target_bits = max(target_bits.values())
     if server.disable_masks:
         forward_packet_list_dict: Dict[int, List[ShareKeysPacket]] = {}
         ask_vectors_clients = setup_param_clients
         for idx in setup_param_clients.keys():
-            forward_packet_list_dict[idx] = []
+            forward_packet_list_dict[idx] = [ShareKeysPacket(
+                source=max_target_bits,
+                destination=max_target_bits,
+                ciphertext=int.to_bytes(max_target_bits, 4, 'big')
+            )]
     log(INFO, f"num clients: {len(ask_vectors_clients)}, fwd_lst: {len(forward_packet_list_dict)}")
     ask_vectors_results_and_failures = ask_vectors(
         ask_vectors_clients, forward_packet_list_dict)
