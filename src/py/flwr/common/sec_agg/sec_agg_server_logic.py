@@ -234,7 +234,7 @@ def sec_agg_fit_round(server, rnd: int
     masked_vector = sec_agg_primitives.weights_divide(
         masked_vector, len(setup_param_results))
     aggregated_vector = sec_agg_primitives.reverse_quantize(
-        masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'], [v for v in target_bits.values()])
+        masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'], [max_target_bits])
     saved_weights = parameters_to_weights(server.parameters)
     # ptr = 0
     # for i in range(len(saved_weights)):
