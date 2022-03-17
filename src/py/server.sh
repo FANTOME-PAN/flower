@@ -1,5 +1,5 @@
 PYTHONUNBUFFERED=1 python3 server.py \
-  --rounds=1000 \
+  --rounds=500 \
   --epochs=1 \
   --sample_fraction=1.0 \
   --min_sample_size=8 \
