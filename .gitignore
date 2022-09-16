@@ -1,4 +1,4 @@
-# Flower files
+# Flower
 .flower_ops
 data/
 .idea/
@@ -7,6 +7,17 @@ x64/
 doc/source/api_documentation
 doc/source/_build
 flwr_logs
+.cache
+
+# Flower Examples
+examples/**/dataset/**
+examples/**/dev/*.sh
+
+# Flower Baselines
+baselines/datasets/leaf
+
+# macOS
+.DS_Store
 
 # Editor
 .vscode
@@ -153,11 +164,3 @@ dmypy.json
 # Poetry
 poetry.lock
 *.pkl
-
-# Examples
-examples/**/dataset/**
-
-# Datasets
-baselines/datasets/leaf
-
-#Testing for sec_agg

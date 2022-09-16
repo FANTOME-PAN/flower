@@ -15,34 +15,26 @@
 """Contains the strategy abstraction and different implementations."""
 
 
-from .default import DefaultStrategy as DefaultStrategy
-from .fast_and_slow import FastAndSlow as FastAndSlow
 from .fault_tolerant_fedavg import FaultTolerantFedAvg as FaultTolerantFedAvg
 from .fedadagrad import FedAdagrad as FedAdagrad
 from .fedadam import FedAdam as FedAdam
 from .fedavg import FedAvg as FedAvg
-from .fedfs_v0 import FedFSv0 as FedFSv0
-from .fedfs_v1 import FedFSv1 as FedFSv1
-from .sec_agg_fedavg import SecAggFedAvg as SecAggFedAvg
-from .sec_agg_strategy import SecAggStrategy as SecAggStrategy
+from .fedavg_android import FedAvgAndroid as FedAvgAndroid
+from .fedavgm import FedAvgM as FedAvgM
+from .fedopt import FedOpt as FedOpt
 from .fedyogi import FedYogi as FedYogi
 from .qfedavg import QFedAvg as QFedAvg
-from .qfedavg import QffedAvg as QffedAvg  # Deprecated
 from .strategy import Strategy as Strategy
 
 __all__ = [
-    "DefaultStrategy",
-    "FastAndSlow",
     "FaultTolerantFedAvg",
     "FedAdagrad",
     "FedAdam",
     "FedAvg",
-    "FedFSv0",
-    "FedFSv1",
+    "FedAvgAndroid",
+    "FedAvgM",
+    "FedOpt",
     "FedYogi",
     "QFedAvg",
-    "QffedAvg",  # Deprecated
-    "Strategy",
-    "SecAggStrategy",
-    "SecAggFedAvg"
+    "Strategy"
 ]

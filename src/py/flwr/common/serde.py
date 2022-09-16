@@ -19,10 +19,12 @@ from typing import Any, List, Tuple, cast, Union
 
 from flwr.proto.transport_pb2 import (
     ClientMessage,
+    Code,
     Parameters,
     Reason,
     Scalar,
     ServerMessage,
+    Status,
 )
 
 from flwr.common.parameter import parameters_to_weights, weights_to_parameters
@@ -45,119 +47,114 @@ def parameters_from_proto(msg: Parameters) -> typing.Parameters:
     return typing.Parameters(tensors=tensors, tensor_type=msg.tensor_type)
 
 
-#  === Reconnect message ===
+#  === ReconnectIns message ===
 
 
-def reconnect_to_proto(reconnect: typing.Reconnect) -> ServerMessage.Reconnect:
-    """Serialize flower.Reconnect to ProtoBuf message."""
-    if reconnect.seconds is not None:
-        return ServerMessage.Reconnect(seconds=reconnect.seconds)
-    return ServerMessage.Reconnect()
+def reconnect_ins_to_proto(ins: typing.ReconnectIns) -> ServerMessage.ReconnectIns:
+    """Serialize ReconnectIns to ProtoBuf message."""
+    if ins.seconds is not None:
+        return ServerMessage.ReconnectIns(seconds=ins.seconds)
+    return ServerMessage.ReconnectIns()
 
 
-def reconnect_from_proto(msg: ServerMessage.Reconnect) -> typing.Reconnect:
-    """Deserialize flower.Reconnect from ProtoBuf message."""
-    return typing.Reconnect(seconds=msg.seconds)
+def reconnect_ins_from_proto(msg: ServerMessage.ReconnectIns) -> typing.ReconnectIns:
+    """Deserialize ReconnectIns from ProtoBuf message."""
+    return typing.ReconnectIns(seconds=msg.seconds)
 
 
-# === Disconnect message ===
+# === DisconnectRes message ===
 
 
-def disconnect_to_proto(disconnect: typing.Disconnect) -> ClientMessage.Disconnect:
-    """Serialize flower.Disconnect to ProtoBuf message."""
+def disconnect_res_to_proto(res: typing.DisconnectRes) -> ClientMessage.DisconnectRes:
+    """Serialize DisconnectRes to ProtoBuf message."""
     reason_proto = Reason.UNKNOWN
-    if disconnect.reason == "RECONNECT":
+    if res.reason == "RECONNECT":
         reason_proto = Reason.RECONNECT
-    elif disconnect.reason == "POWER_DISCONNECTED":
+    elif res.reason == "POWER_DISCONNECTED":
         reason_proto = Reason.POWER_DISCONNECTED
-    elif disconnect.reason == "WIFI_UNAVAILABLE":
+    elif res.reason == "WIFI_UNAVAILABLE":
         reason_proto = Reason.WIFI_UNAVAILABLE
-    return ClientMessage.Disconnect(reason=reason_proto)
+    return ClientMessage.DisconnectRes(reason=reason_proto)
 
 
-def disconnect_from_proto(msg: ClientMessage.Disconnect) -> typing.Disconnect:
-    """Deserialize flower.Disconnect from ProtoBuf message."""
+def disconnect_res_from_proto(msg: ClientMessage.DisconnectRes) -> typing.DisconnectRes:
+    """Deserialize DisconnectRes from ProtoBuf message."""
     if msg.reason == Reason.RECONNECT:
-        return typing.Disconnect(reason="RECONNECT")
+        return typing.DisconnectRes(reason="RECONNECT")
     if msg.reason == Reason.POWER_DISCONNECTED:
-        return typing.Disconnect(reason="POWER_DISCONNECTED")
+        return typing.DisconnectRes(reason="POWER_DISCONNECTED")
     if msg.reason == Reason.WIFI_UNAVAILABLE:
-        return typing.Disconnect(reason="WIFI_UNAVAILABLE")
-    return typing.Disconnect(reason="UNKNOWN")
+        return typing.DisconnectRes(reason="WIFI_UNAVAILABLE")
+    return typing.DisconnectRes(reason="UNKNOWN")
 
 
-# === GetWeights messages ===
+# === GetParameters messages ===
 
 
-def get_parameters_to_proto() -> ServerMessage.GetParameters:
+def get_parameters_ins_to_proto(
+    ins: typing.GetParametersIns,
+) -> ServerMessage.GetParametersIns:
+    """Serialize GetParametersIns to ProtoBuf message."""
+    config = properties_to_proto(ins.config)
+    return ServerMessage.GetParametersIns(config=config)
+
+
+def get_parameters_ins_from_proto(
+    msg: ServerMessage.GetParametersIns,
+) -> typing.GetParametersIns:
+    """Deserialize GetParametersIns from ProtoBuf message."""
+    config = properties_from_proto(msg.config)
+    return typing.GetParametersIns(config=config)
+
+
+def get_parameters_res_to_proto(
+    res: typing.GetParametersRes,
+) -> ClientMessage.GetParametersRes:
     """."""
-    return ServerMessage.GetParameters()
-
-
-# Not required:
-# def get_weights_from_proto(msg: ServerMessage.GetWeights) -> None:
-
-
-def parameters_res_to_proto(res: typing.ParametersRes) -> ClientMessage.ParametersRes:
-    """."""
+    status_msg = status_to_proto(res.status)
+    if res.status.code == typing.Code.GET_PARAMETERS_NOT_IMPLEMENTED:
+        return ClientMessage.GetParametersRes(status=status_msg)
     parameters_proto = parameters_to_proto(res.parameters)
-    return ClientMessage.ParametersRes(parameters=parameters_proto)
+    return ClientMessage.GetParametersRes(
+        status=status_msg, parameters=parameters_proto
+    )
 
 
-def parameters_res_from_proto(msg: ClientMessage.ParametersRes) -> typing.ParametersRes:
+def get_parameters_res_from_proto(
+    msg: ClientMessage.GetParametersRes,
+) -> typing.GetParametersRes:
     """."""
+    status = status_from_proto(msg=msg.status)
     parameters = parameters_from_proto(msg.parameters)
-    return typing.ParametersRes(parameters=parameters)
+    return typing.GetParametersRes(status=status, parameters=parameters)
 
 
 # === Fit messages ===
 
 
 def fit_ins_to_proto(ins: typing.FitIns) -> ServerMessage.FitIns:
-    """Serialize flower.FitIns to ProtoBuf message."""
+    """Serialize FitIns to ProtoBuf message."""
     parameters_proto = parameters_to_proto(ins.parameters)
     config_msg = metrics_to_proto(ins.config)
     return ServerMessage.FitIns(parameters=parameters_proto, config=config_msg)
 
 
 def fit_ins_from_proto(msg: ServerMessage.FitIns) -> typing.FitIns:
-    """Deserialize flower.FitIns from ProtoBuf message."""
+    """Deserialize FitIns from ProtoBuf message."""
     parameters = parameters_from_proto(msg.parameters)
     config = metrics_from_proto(msg.config)
     return typing.FitIns(parameters=parameters, config=config)
 
 
 def fit_res_to_proto(res: typing.FitRes) -> ClientMessage.FitRes:
-    """Serialize flower.FitIns to ProtoBuf message."""
+    """Serialize FitIns to ProtoBuf message."""
+    status_msg = status_to_proto(res.status)
+    if res.status.code == typing.Code.FIT_NOT_IMPLEMENTED:
+        return ClientMessage.FitRes(status=status_msg)
     parameters_proto = parameters_to_proto(res.parameters)
     metrics_msg = None if res.metrics is None else metrics_to_proto(res.metrics)
-    # Legacy case, will be removed in a future release
-    if res.num_examples_ceil is not None and res.fit_duration is not None:
-        return ClientMessage.FitRes(
-            parameters=parameters_proto,
-            num_examples=res.num_examples,
-            num_examples_ceil=res.num_examples_ceil,  # Deprecated
-            fit_duration=res.fit_duration,  # Deprecated
-            metrics=metrics_msg,
-        )
-    # Legacy case, will be removed in a future release
-    if res.num_examples_ceil is not None:
-        return ClientMessage.FitRes(
-            parameters=parameters_proto,
-            num_examples=res.num_examples,
-            num_examples_ceil=res.num_examples_ceil,  # Deprecated
-            metrics=metrics_msg,
-        )
-    # Legacy case, will be removed in a future release
-    if res.fit_duration is not None:
-        return ClientMessage.FitRes(
-            parameters=parameters_proto,
-            num_examples=res.num_examples,
-            fit_duration=res.fit_duration,  # Deprecated
-            metrics=metrics_msg,
-        )
-    # Forward-compatible case
     return ClientMessage.FitRes(
+        status=status_msg,
         parameters=parameters_proto,
         num_examples=res.num_examples,
         metrics=metrics_msg,
@@ -165,19 +162,203 @@ def fit_res_to_proto(res: typing.FitRes) -> ClientMessage.FitRes:
 
 
 def fit_res_from_proto(msg: ClientMessage.FitRes) -> typing.FitRes:
-    """Deserialize flower.FitRes from ProtoBuf message."""
+    """Deserialize FitRes from ProtoBuf message."""
+    status = status_from_proto(msg=msg.status)
     parameters = parameters_from_proto(msg.parameters)
     metrics = None if msg.metrics is None else metrics_from_proto(msg.metrics)
     return typing.FitRes(
+        status=status,
         parameters=parameters,
         num_examples=msg.num_examples,
-        num_examples_ceil=msg.num_examples_ceil,  # Deprecated
-        fit_duration=msg.fit_duration,  # Deprecated
         metrics=metrics,
     )
 
 
-# SA Message Carriers
+# === Properties messages ===
+
+
+def get_properties_ins_to_proto(
+    ins: typing.GetPropertiesIns,
+) -> ServerMessage.GetPropertiesIns:
+    """Serialize GetPropertiesIns to ProtoBuf message."""
+    config = properties_to_proto(ins.config)
+    return ServerMessage.GetPropertiesIns(config=config)
+
+
+def get_properties_ins_from_proto(
+    msg: ServerMessage.GetPropertiesIns,
+) -> typing.GetPropertiesIns:
+    """Deserialize GetPropertiesIns from ProtoBuf message."""
+    config = properties_from_proto(msg.config)
+    return typing.GetPropertiesIns(config=config)
+
+
+def get_properties_res_to_proto(
+    res: typing.GetPropertiesRes,
+) -> ClientMessage.GetPropertiesRes:
+    """Serialize GetPropertiesIns to ProtoBuf message."""
+    status_msg = status_to_proto(res.status)
+    if res.status.code == typing.Code.GET_PROPERTIES_NOT_IMPLEMENTED:
+        return ClientMessage.GetPropertiesRes(status=status_msg)
+    properties_msg = properties_to_proto(res.properties)
+    return ClientMessage.GetPropertiesRes(status=status_msg, properties=properties_msg)
+
+
+def get_properties_res_from_proto(
+    msg: ClientMessage.GetPropertiesRes,
+) -> typing.GetPropertiesRes:
+    """Deserialize GetPropertiesRes from ProtoBuf message."""
+    status = status_from_proto(msg=msg.status)
+    properties = properties_from_proto(msg.properties)
+    return typing.GetPropertiesRes(status=status, properties=properties)
+
+
+def status_to_proto(status: typing.Status) -> Status:
+    """Serialize Code to ProtoBuf message."""
+    code = Code.OK
+    if status.code == typing.Code.GET_PROPERTIES_NOT_IMPLEMENTED:
+        code = Code.GET_PROPERTIES_NOT_IMPLEMENTED
+    if status.code == typing.Code.GET_PARAMETERS_NOT_IMPLEMENTED:
+        code = Code.GET_PARAMETERS_NOT_IMPLEMENTED
+    if status.code == typing.Code.FIT_NOT_IMPLEMENTED:
+        code = Code.FIT_NOT_IMPLEMENTED
+    if status.code == typing.Code.EVALUATE_NOT_IMPLEMENTED:
+        code = Code.EVALUATE_NOT_IMPLEMENTED
+    return Status(code=code, message=status.message)
+
+
+def status_from_proto(msg: Status) -> typing.Status:
+    """Deserialize Code from ProtoBuf message."""
+    code = typing.Code.OK
+    if msg.code == Code.GET_PROPERTIES_NOT_IMPLEMENTED:
+        code = typing.Code.GET_PROPERTIES_NOT_IMPLEMENTED
+    if msg.code == Code.GET_PARAMETERS_NOT_IMPLEMENTED:
+        code = typing.Code.GET_PARAMETERS_NOT_IMPLEMENTED
+    if msg.code == Code.FIT_NOT_IMPLEMENTED:
+        code = typing.Code.FIT_NOT_IMPLEMENTED
+    if msg.code == Code.EVALUATE_NOT_IMPLEMENTED:
+        code = typing.Code.EVALUATE_NOT_IMPLEMENTED
+    return typing.Status(code=code, message=msg.message)
+
+
+# === Evaluate messages ===
+
+
+def evaluate_ins_to_proto(ins: typing.EvaluateIns) -> ServerMessage.EvaluateIns:
+    """Serialize EvaluateIns to ProtoBuf message."""
+    parameters_proto = parameters_to_proto(ins.parameters)
+    config_msg = metrics_to_proto(ins.config)
+    return ServerMessage.EvaluateIns(parameters=parameters_proto, config=config_msg)
+
+
+def evaluate_ins_from_proto(msg: ServerMessage.EvaluateIns) -> typing.EvaluateIns:
+    """Deserialize EvaluateIns from ProtoBuf message."""
+    parameters = parameters_from_proto(msg.parameters)
+    config = metrics_from_proto(msg.config)
+    return typing.EvaluateIns(parameters=parameters, config=config)
+
+
+def evaluate_res_to_proto(res: typing.EvaluateRes) -> ClientMessage.EvaluateRes:
+    """Serialize EvaluateIns to ProtoBuf message."""
+    status_msg = status_to_proto(res.status)
+    if res.status.code == typing.Code.EVALUATE_NOT_IMPLEMENTED:
+        return ClientMessage.EvaluateRes(status=status_msg)
+    metrics_msg = None if res.metrics is None else metrics_to_proto(res.metrics)
+    return ClientMessage.EvaluateRes(
+        status=status_msg,
+        loss=res.loss,
+        num_examples=res.num_examples,
+        metrics=metrics_msg,
+    )
+
+
+def evaluate_res_from_proto(msg: ClientMessage.EvaluateRes) -> typing.EvaluateRes:
+    """Deserialize EvaluateRes from ProtoBuf message."""
+    status = status_from_proto(msg=msg.status)
+    metrics = None if msg.metrics is None else metrics_from_proto(msg.metrics)
+    return typing.EvaluateRes(
+        status=status,
+        loss=msg.loss,
+        num_examples=msg.num_examples,
+        metrics=metrics,
+    )
+
+
+# === Properties messages ===
+
+
+def properties_to_proto(properties: typing.Properties) -> Any:
+    """Serialize... ."""
+    proto = {}
+    for key in properties:
+        proto[key] = scalar_to_proto(properties[key])
+    return proto
+
+
+def properties_from_proto(proto: Any) -> typing.Properties:
+    """Deserialize... ."""
+    properties = {}
+    for k in proto:
+        properties[k] = scalar_from_proto(proto[k])
+    return properties
+
+
+# === Metrics messages ===
+
+
+def metrics_to_proto(metrics: typing.Metrics) -> Any:
+    """Serialize... ."""
+    proto = {}
+    for key in metrics:
+        proto[key] = scalar_to_proto(metrics[key])
+    return proto
+
+
+def metrics_from_proto(proto: Any) -> typing.Metrics:
+    """Deserialize... ."""
+    metrics = {}
+    for k in proto:
+        metrics[k] = scalar_from_proto(proto[k])
+    return metrics
+
+
+# === Scalar messages ===
+
+
+def scalar_to_proto(scalar: typing.Scalar) -> Scalar:
+    """Serialize... ."""
+
+    if isinstance(scalar, bool):
+        return Scalar(bool=scalar)
+
+    if isinstance(scalar, bytes):
+        return Scalar(bytes=scalar)
+
+    if isinstance(scalar, float):
+        return Scalar(double=scalar)
+
+    if isinstance(scalar, int):
+        return Scalar(sint64=scalar)
+
+    if isinstance(scalar, str):
+        return Scalar(string=scalar)
+
+    raise Exception(
+        f"Accepted types: {bool, bytes, float, int, str} (but not {type(scalar)})"
+    )
+
+
+def scalar_from_proto(scalar_msg: Scalar) -> typing.Scalar:
+    """Deserialize... ."""
+    scalar_field = scalar_msg.WhichOneof("scalar")
+    scalar = getattr(scalar_msg, cast(str, scalar_field))
+    return cast(typing.Scalar, scalar)
+
+
+# === Secure Aggregation Messages ===
+
+
+# Server side
 def sa_server_msg_carrier_to_proto(ins: typing.SAServerMessageCarrier)\
         -> ServerMessage.SAMessageCarrier:
     np_arr_lst = None if ins.numpy_ndarray_list is None else parameters_to_proto(
@@ -197,10 +378,6 @@ def sa_server_msg_carrier_to_proto(ins: typing.SAServerMessageCarrier)\
 
 def sa_server_msg_carrier_from_proto(proto: ServerMessage.SAMessageCarrier)\
         -> typing.SAServerMessageCarrier:
-    # np_arr_lst = None if proto.ndarray_list is None else parameters_to_weights(proto.ndarray_list)
-    # str2scalar = None if proto.str2scalar is None else metrics_from_proto(proto.str2scalar)
-    # params = None if proto.parameters is None else parameters_from_proto(proto.parameters)
-    # fit_ins = None if proto.fit_ins is None else fit_ins_from_proto(proto.fit_ins)
     np_arr_lst = parameters_to_weights(proto.ndarray_list)
     str2scalar = metrics_from_proto(proto.str2scalar)
     params = parameters_from_proto(proto.parameters)
@@ -215,6 +392,12 @@ def sa_server_msg_carrier_from_proto(proto: ServerMessage.SAMessageCarrier)\
     )
 
 
+def check_sa_error(msg: ClientMessage.SAMessageCarrier):
+    if msg.error_msg != '':
+        raise Exception(msg.error_msg)
+
+
+# Client side
 def sa_client_msg_carrier_to_proto(ins: typing.SAClientMessageCarrier)\
         -> ClientMessage.SAMessageCarrier:
     np_arr_lst = None if ins.numpy_ndarray_list is None else parameters_to_proto(
@@ -246,417 +429,3 @@ def sa_client_msg_carrier_from_proto(proto: ClientMessage.SAMessageCarrier)\
         parameters=params,
         fit_res=fit_res
     )
-
-
-def check_sa_error(msg: ClientMessage.SAMessageCarrier):
-    if msg.error_msg != '':
-        raise Exception(msg.error_msg)
-
-# === SecAgg Messages ===
-# === Check if error ===
-def check_error(msg: Union[ClientMessage.SecAggRes, ClientMessage.LightSecAggRes]):
-    if msg.HasField("error_res"):
-        raise Exception(msg.error_res.error)
-
-
-# === Setup Param ===
-def setup_param_ins_to_proto(
-    setup_param_ins: typing.SetupParamIns,
-) -> ServerMessage.SecAggMsg:
-    return ServerMessage.SecAggMsg(
-        setup_param=ServerMessage.SecAggMsg.SetupParam(
-            sec_agg_param_dict=metrics_to_proto(setup_param_ins.sec_agg_param_dict)
-        )
-    )
-
-
-def setup_param_ins_from_proto(
-    setup_param_msg: ServerMessage.SecAggMsg,
-) -> typing.SetupParamIns:
-    return typing.SetupParamIns(
-        sec_agg_param_dict=metrics_from_proto(
-            setup_param_msg.setup_param.sec_agg_param_dict)
-    )
-
-
-def setup_param_res_to_proto(setup_param_res: typing.SetupParamRes):
-    return ClientMessage.SecAggRes(
-        setup_param_res=ClientMessage.SecAggRes.SetupParamRes()
-    )
-
-
-def setup_param_res_from_proto(setup_param_res: ServerMessage.SecAggMsg) -> typing.SetupParamRes:
-    return typing.SetupParamRes()
-# === Ask Keys ===
-
-
-def ask_keys_ins_to_proto(Ask_keys_ins: typing.AskKeysIns) -> ServerMessage.SecAggMsg:
-    return ServerMessage.SecAggMsg(ask_keys=ServerMessage.SecAggMsg.AskKeys())
-
-
-def ask_keys_ins_from_proto(ask_keys_msg: ServerMessage.SecAggMsg) -> typing.AskKeysIns:
-    return typing.AskKeysIns()
-
-
-def ask_keys_res_to_proto(res: typing.ParametersRes) -> ClientMessage.SecAggRes:
-    return ClientMessage.SecAggRes(
-        ask_keys_res=ClientMessage.SecAggRes.AskKeysRes(pk1=res.pk1, pk2=res.pk2)
-    )
-
-
-def ask_keys_res_from_proto(msg: ClientMessage.SecAggRes) -> typing.AskKeysRes:
-    return typing.AskKeysRes(pk1=msg.ask_keys_res.pk1, pk2=msg.ask_keys_res.pk2)
-
-
-# === Share Keys ===
-def share_keys_ins_to_proto(share_keys_ins: typing.ShareKeysIns) -> ServerMessage.SecAggMsg:
-    public_keys_dict = share_keys_ins.public_keys_dict
-    proto_public_keys_dict = {}
-    for i in public_keys_dict.keys():
-        proto_public_keys_dict[i] = ServerMessage.SecAggMsg.ShareKeys.KeysPair(
-            pk1=public_keys_dict[i].pk1, pk2=public_keys_dict[i].pk2
-        )
-    return ServerMessage.SecAggMsg(
-        share_keys=ServerMessage.SecAggMsg.ShareKeys(
-            public_keys_dict=proto_public_keys_dict
-        )
-    )
-
-
-def share_keys_ins_from_proto(share_keys_msg: ServerMessage.SecAggMsg) -> typing.ShareKeysIns:
-    proto_public_keys_dict = share_keys_msg.share_keys.public_keys_dict
-    public_keys_dict = {}
-    for i in proto_public_keys_dict.keys():
-        public_keys_dict[i] = typing.AskKeysRes(
-            pk1=proto_public_keys_dict[i].pk1, pk2=proto_public_keys_dict[i].pk2)
-    return typing.ShareKeysIns(public_keys_dict=public_keys_dict)
-
-
-def share_keys_res_to_proto(share_keys_res: typing.ShareKeysRes) -> ClientMessage.SecAggRes:
-    share_keys_res_msg = ClientMessage.SecAggRes.ShareKeysRes()
-    for packet in share_keys_res.share_keys_res_list:
-        #print(("send stage 2", len(packet.ciphertext)))
-        proto_packet = ClientMessage.SecAggRes.ShareKeysRes.Packet(
-            source=packet.source, destination=packet.destination, ciphertext=packet.ciphertext
-        )
-        share_keys_res_msg.packet_list.append(proto_packet)
-    return ClientMessage.SecAggRes(share_keys_res=share_keys_res_msg)
-
-
-def share_keys_res_from_proto(share_keys_res_msg: ClientMessage.SecAggRes) -> typing.ShareKeysRes:
-    proto_packet_list = share_keys_res_msg.share_keys_res.packet_list
-    packet_list = []
-    for proto_packet in proto_packet_list:
-        packet = typing.ShareKeysPacket(
-            source=proto_packet.source, destination=proto_packet.destination, ciphertext=proto_packet.ciphertext
-        )
-        #print(("receive stage 2", len(packet.ciphertext)))
-        packet_list.append(packet)
-    return typing.ShareKeysRes(share_keys_res_list=packet_list)
-
-# === Ask vectors ===
-
-
-def ask_vectors_ins_to_proto(ask_vectors_ins: typing.AskVectorsIns) -> ServerMessage.SecAggMsg:
-    packet_list = ask_vectors_ins.ask_vectors_in_list
-    proto_packet_list = []
-    for packet in packet_list:
-        proto_packet = ServerMessage.SecAggMsg.AskVectors.Packet(
-            source=packet.source, destination=packet.destination, ciphertext=packet.ciphertext)
-        #print(("send stage 3", len(packet.ciphertext)))
-        proto_packet_list.append(proto_packet)
-    fit_ins = ServerMessage.SecAggMsg.AskVectors.FitIns(parameters=parameters_to_proto(
-        ask_vectors_ins.fit_ins.parameters), config=metrics_to_proto(ask_vectors_ins.fit_ins.config))
-    return ServerMessage.SecAggMsg(ask_vectors=ServerMessage.SecAggMsg.AskVectors(packet_list=proto_packet_list, fit_ins=fit_ins))
-
-
-def ask_vectors_ins_from_proto(ask_vectors_msg: ServerMessage.SecAggMsg) -> typing.AskVectorsIns:
-    proto_packet_list = ask_vectors_msg.ask_vectors.packet_list
-    packet_list = []
-    for proto_packet in proto_packet_list:
-        packet = typing.ShareKeysPacket(
-            source=proto_packet.source, destination=proto_packet.destination, ciphertext=proto_packet.ciphertext)
-        #print(("receive stage 3", len(proto_packet.ciphertext)))
-        packet_list.append(packet)
-    fit_ins = typing.FitIns(parameters=parameters_from_proto(
-        ask_vectors_msg.ask_vectors.fit_ins.parameters), config=metrics_from_proto(ask_vectors_msg.ask_vectors.fit_ins.config))
-    return typing.AskVectorsIns(ask_vectors_in_list=packet_list, fit_ins=fit_ins)
-
-
-def ask_vectors_res_to_proto(ask_vectors_res: typing.AskVectorsRes) -> ClientMessage.SecAggRes:
-    parameters_proto = parameters_to_proto(ask_vectors_res.parameters)
-    return ClientMessage.SecAggRes(ask_vectors_res=ClientMessage.SecAggRes.AskVectorsRes(parameters=parameters_proto))
-
-
-def ask_vectors_res_from_proto(ask_vectors_res_msg: ClientMessage.SecAggRes) -> typing.AskVectorsRes:
-    parameters = parameters_from_proto(ask_vectors_res_msg.ask_vectors_res.parameters)
-    return typing.AskVectorsRes(parameters=parameters)
-
-# === Unmask Vectors ===
-
-
-def unmask_vectors_ins_to_proto(unmask_vectors_ins: typing.UnmaskVectorsIns) -> ServerMessage.SecAggMsg:
-    return ServerMessage.SecAggMsg(unmask_vectors=ServerMessage.SecAggMsg.UnmaskVectors(
-        available_clients=unmask_vectors_ins.available_clients,
-        dropout_clients=unmask_vectors_ins.dropout_clients))
-
-
-def unmask_vectors_ins_from_proto(unmask_vectors_ins: ServerMessage.SecAggMsg) -> typing.UnmaskVectorsIns:
-    return typing.UnmaskVectorsIns(
-        available_clients=unmask_vectors_ins.unmask_vectors.available_clients,
-        dropout_clients=unmask_vectors_ins.unmask_vectors.dropout_clients)
-
-
-def unmask_vectors_res_to_proto(unmask_vectors_res: typing.UnmaskVectorsRes) -> ClientMessage.SecAggRes:
-    return ClientMessage.SecAggRes(unmask_vectors_res=ClientMessage.SecAggRes.UnmaskVectorsRes(
-        share_dict=unmask_vectors_res.share_dict))
-
-
-def unmask_vectors_res_from_proto(unmask_vectors_res: ClientMessage.SecAggRes) -> typing.UnmaskVectorsRes:
-    return typing.UnmaskVectorsRes(share_dict=unmask_vectors_res.unmask_vectors_res.share_dict)
-
-
-# === Light Sec Agg messages ===
-def light_sec_agg_setup_cfg_ins_to_proto(ins: typing.LightSecAggSetupConfigIns)\
-        -> ServerMessage.LightSecAggIns:
-    return ServerMessage.LightSecAggIns(
-        setup_cfg_ins=ServerMessage.LightSecAggIns.LightSecAggSetupConfigIns(
-            sec_agg_cfg_dict=metrics_to_proto(ins.sec_agg_cfg_dict)
-        )
-    )
-
-
-def light_sec_agg_setup_cfg_ins_from_proto(proto: ServerMessage.LightSecAggIns)\
-        -> typing.LightSecAggSetupConfigIns:
-    return typing.LightSecAggSetupConfigIns(
-        sec_agg_cfg_dict=metrics_from_proto(proto.setup_cfg_ins.sec_agg_cfg_dict)
-    )
-
-
-def ask_encrypted_encoded_masks_ins_to_proto(ins: typing.AskEncryptedEncodedMasksIns)\
-        -> ServerMessage.LightSecAggIns:
-    ret_dict = dict([(k, v.pk) for k, v in ins.public_keys_dict.items()])
-    return ServerMessage.LightSecAggIns(
-        ask_en_msks_ins=ServerMessage.LightSecAggIns.AskEncryptedEncodedMasksIns(
-            public_keys_dict=ret_dict
-        )
-    )
-
-
-def ask_encrypted_encoded_masks_ins_from_proto(proto: ServerMessage.LightSecAggIns)\
-        -> typing.AskEncryptedEncodedMasksIns:
-    received = proto.ask_en_msks_ins.public_keys_dict
-    ret_dict = dict([(k, typing.LightSecAggSetupConfigRes(v)) for k, v in received.items()])
-    return typing.AskEncryptedEncodedMasksIns(ret_dict)
-
-
-def ask_masked_models_ins_to_proto(ins: typing.AskMaskedModelsIns)\
-        -> ServerMessage.LightSecAggIns:
-    packet_fn = ServerMessage.LightSecAggIns.AskMaskedModelsIns.Packet
-    fitins_fn = ServerMessage.LightSecAggIns.AskMaskedModelsIns.FitIns
-    packet_lst = [packet_fn(
-        source=p.source,
-        destination=p.destination,
-        ciphertext=p.ciphertext
-    ) for p in ins.packet_list]
-    if ins.fit_ins is None:
-        fitins = None
-    else:
-        fitins = fitins_fn(
-            parameters=parameters_to_proto(ins.fit_ins.parameters),
-            config=metrics_to_proto(ins.fit_ins.config)
-        )
-    return ServerMessage.LightSecAggIns(
-        ask_models_ins=ServerMessage.LightSecAggIns.AskMaskedModelsIns(
-            packet_list=packet_lst,
-            fit_ins=fitins
-        )
-    )
-
-
-def ask_masked_models_ins_from_proto(proto: ServerMessage.LightSecAggIns)\
-        -> typing.AskMaskedModelsIns:
-    packet_lst = [typing.EncryptedEncodedMasksPacket(
-        source=p.source,
-        destination=p.destination,
-        ciphertext=p.ciphertext
-    ) for p in proto.ask_models_ins.packet_list]
-    fitins = typing.FitIns(
-        parameters=parameters_from_proto(proto.ask_models_ins.fit_ins.parameters),
-        config=metrics_from_proto(proto.ask_models_ins.fit_ins.config)
-    )
-    return typing.AskMaskedModelsIns(packet_lst, fitins)
-
-
-def ask_aggregated_encoded_masks_ins_to_proto(ins: typing.AskAggregatedEncodedMasksIns)\
-        -> ServerMessage.LightSecAggIns:
-    return ServerMessage.LightSecAggIns(
-        ask_agg_msks_ins=ServerMessage.LightSecAggIns.AskAggregatedEncodedMasksIns(
-            surviving_clients=ins.surviving_clients
-        )
-    )
-
-
-def ask_aggregated_encoded_masks_ins_from_proto(proto: ServerMessage.LightSecAggIns)\
-        -> typing.AskAggregatedEncodedMasksIns:
-    return typing.AskAggregatedEncodedMasksIns(proto.ask_agg_msks_ins.surviving_clients)
-
-
-# Client side
-def light_sec_agg_setup_cfg_res_to_proto(res: typing.LightSecAggSetupConfigRes)\
-        -> ClientMessage.LightSecAggRes:
-    return ClientMessage.LightSecAggRes(
-        setup_cfg_res=ClientMessage.LightSecAggRes.LightSecAggSetupConfigRes(pk=res.pk)
-    )
-
-
-def light_sec_agg_setup_cfg_res_from_proto(proto: ClientMessage.LightSecAggRes)\
-        -> typing.LightSecAggSetupConfigRes:
-    return typing.LightSecAggSetupConfigRes(proto.setup_cfg_res.pk)
-
-
-def ask_encrypted_encoded_masks_res_to_proto(res: typing.AskEncryptedEncodedMasksRes)\
-        -> ClientMessage.LightSecAggRes:
-    return ClientMessage.LightSecAggRes(
-        ask_en_msks_res=ClientMessage.LightSecAggRes.AskEncryptedEncodedMasksRes(
-            packet_list=[ClientMessage.LightSecAggRes.AskEncryptedEncodedMasksRes.Packet(
-                source=p.source,
-                destination=p.destination,
-                ciphertext=p.ciphertext
-            ) for p in res.packet_list]
-        )
-    )
-
-
-def ask_encrypted_encoded_masks_res_from_proto(proto: ClientMessage.LightSecAggRes)\
-        -> typing.AskEncryptedEncodedMasksRes:
-    return typing.AskEncryptedEncodedMasksRes(
-        [typing.EncryptedEncodedMasksPacket(
-            source=p.source,
-            destination=p.destination,
-            ciphertext=p.ciphertext
-        ) for p in proto.ask_en_msks_res.packet_list]
-    )
-
-
-def ask_masked_models_res_to_proto(res: typing.AskMaskedModelsRes)\
-        -> ClientMessage.LightSecAggRes:
-    return ClientMessage.LightSecAggRes(
-        ask_models_res=ClientMessage.LightSecAggRes.AskMaskedModelsRes(
-            parameters=parameters_to_proto(res.parameters)
-        )
-    )
-
-
-def ask_masked_models_res_from_proto(proto: ClientMessage.LightSecAggRes)\
-        -> typing.AskMaskedModelsRes:
-    return typing.AskMaskedModelsRes(parameters_from_proto(proto.ask_models_res.parameters))
-
-
-def ask_aggregated_encoded_masks_res_to_proto(res: typing.AskAggregatedEncodedMasksRes)\
-        -> ClientMessage.LightSecAggRes:
-    return ClientMessage.LightSecAggRes(
-        ask_agg_msks_res=ClientMessage.LightSecAggRes.AskAggregatedEncodedMasksRes(
-            aggregated_encoded_mask=parameters_to_proto(res.aggregated_encoded_mask)
-        )
-    )
-
-
-def ask_aggregated_encoded_masks_res_from_proto(proto: ClientMessage.LightSecAggRes)\
-        -> typing.AskAggregatedEncodedMasksRes:
-    return typing.AskAggregatedEncodedMasksRes(
-        aggregated_encoded_mask=parameters_from_proto(proto.ask_agg_msks_res.aggregated_encoded_mask)
-    )
-# === Evaluate messages ===
-
-
-def evaluate_ins_to_proto(ins: typing.EvaluateIns) -> ServerMessage.EvaluateIns:
-    """Serialize flower.EvaluateIns to ProtoBuf message."""
-    parameters_proto = parameters_to_proto(ins.parameters)
-    config_msg = metrics_to_proto(ins.config)
-    return ServerMessage.EvaluateIns(parameters=parameters_proto, config=config_msg)
-
-
-def evaluate_ins_from_proto(msg: ServerMessage.EvaluateIns) -> typing.EvaluateIns:
-    """Deserialize flower.EvaluateIns from ProtoBuf message."""
-    parameters = parameters_from_proto(msg.parameters)
-    config = metrics_from_proto(msg.config)
-    return typing.EvaluateIns(parameters=parameters, config=config)
-
-
-def evaluate_res_to_proto(res: typing.EvaluateRes) -> ClientMessage.EvaluateRes:
-    """Serialize flower.EvaluateIns to ProtoBuf message."""
-    metrics_msg = None if res.metrics is None else metrics_to_proto(res.metrics)
-    # Legacy case, will be removed in a future release
-    if res.accuracy is not None:
-        return ClientMessage.EvaluateRes(
-            loss=res.loss,
-            num_examples=res.num_examples,
-            accuracy=res.accuracy,  # Deprecated
-            metrics=metrics_msg,
-        )
-    # Forward-compatible case
-    return ClientMessage.EvaluateRes(
-        loss=res.loss,
-        num_examples=res.num_examples,
-        metrics=metrics_msg,
-    )
-
-
-def evaluate_res_from_proto(msg: ClientMessage.EvaluateRes) -> typing.EvaluateRes:
-    """Deserialize flower.EvaluateRes from ProtoBuf message."""
-    metrics = None if msg.metrics is None else metrics_from_proto(msg.metrics)
-    return typing.EvaluateRes(
-        loss=msg.loss,
-        num_examples=msg.num_examples,
-        accuracy=msg.accuracy,  # Deprecated
-        metrics=metrics,
-    )
-
-
-# === Metrics messages ===
-
-
-def metrics_to_proto(metrics: typing.Metrics) -> Any:
-    """Serialize... ."""
-    proto = {}
-    for key in metrics:
-        proto[key] = scalar_to_proto(metrics[key])
-    return proto
-
-
-def metrics_from_proto(proto: Any) -> typing.Metrics:
-    """Deserialize... ."""
-    metrics = {}
-    for k in proto:
-        metrics[k] = scalar_from_proto(proto[k])
-    return metrics
-
-
-def scalar_to_proto(scalar: typing.Scalar) -> Scalar:
-    """Serialize... ."""
-
-    if isinstance(scalar, bool):
-        return Scalar(bool=scalar)
-
-    if isinstance(scalar, bytes):
-        return Scalar(bytes=scalar)
-
-    if isinstance(scalar, float):
-        return Scalar(double=scalar)
-
-    if isinstance(scalar, int):
-        return Scalar(sint64=scalar)
-
-    if isinstance(scalar, str):
-        return Scalar(string=scalar)
-
-    raise Exception(
-        f"Accepted types: {bool, bytes, float, int, str} (but not {type(scalar)})"
-    )
-
-
-def scalar_from_proto(scalar_msg: Scalar) -> typing.Scalar:
-    """Deserialize... ."""
-    scalar = getattr(scalar_msg, scalar_msg.WhichOneof("scalar"))
-    return cast(typing.Scalar, scalar)

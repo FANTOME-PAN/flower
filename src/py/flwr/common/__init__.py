@@ -17,38 +17,55 @@
 
 from .parameter import bytes_to_ndarray as bytes_to_ndarray
 from .parameter import ndarray_to_bytes as ndarray_to_bytes
-from .parameter import parameters_to_weights as parameters_to_weights
-from .parameter import weights_to_parameters as weights_to_parameters
-from .typing import Disconnect as Disconnect
+from .parameter import ndarrays_to_parameters as ndarrays_to_parameters
+from .parameter import parameters_to_ndarrays as parameters_to_ndarrays
+from .typing import Code as Code
+from .typing import Config as Config
+from .typing import DisconnectRes as DisconnectRes
 from .typing import EvaluateIns as EvaluateIns
 from .typing import EvaluateRes as EvaluateRes
 from .typing import FitIns as FitIns
 from .typing import FitRes as FitRes
+from .typing import GetParametersIns as GetParametersIns
+from .typing import GetParametersRes as GetParametersRes
+from .typing import GetPropertiesIns as GetPropertiesIns
+from .typing import GetPropertiesRes as GetPropertiesRes
 from .typing import Metrics as Metrics
+from .typing import MetricsAggregationFn as MetricsAggregationFn
+from .typing import NDArray as NDArray
+from .typing import NDArrays as NDArrays
 from .typing import Parameters as Parameters
-from .typing import ParametersRes as ParametersRes
-from .typing import Reconnect as Reconnect
+from .typing import Properties as Properties
+from .typing import ReconnectIns as ReconnectIns
 from .typing import Scalar as Scalar
-from .typing import Weights as Weights
-from .typing import AskKeysRes as AskKeysRes
+from .typing import Status as Status
 
 GRPC_MAX_MESSAGE_LENGTH: int = 536_870_912  # == 512 * 1024 * 1024
 
 __all__ = [
     "bytes_to_ndarray",
-    "Disconnect",
+    "Code",
+    "Config",
+    "DisconnectRes",
     "EvaluateIns",
     "EvaluateRes",
     "FitIns",
     "FitRes",
+    "GetParametersIns",
+    "GetParametersRes",
+    "GetPropertiesIns",
+    "GetPropertiesRes",
     "GRPC_MAX_MESSAGE_LENGTH",
     "Metrics",
+    "MetricsAggregationFn",
     "ndarray_to_bytes",
+    "NDArray",
+    "NDArrays",
+    "ndarrays_to_parameters",
     "Parameters",
-    "parameters_to_weights",
-    "ParametersRes",
-    "Reconnect",
+    "parameters_to_ndarrays",
+    "Properties",
+    "ReconnectIns",
     "Scalar",
-    "Weights",
-    "weights_to_parameters",
+    "Status",
 ]

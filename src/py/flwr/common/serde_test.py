@@ -12,25 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""(De-)Serialization Tests."""
+"""(De-)serialization tests."""
 
 from typing import Union, cast
-import numpy as np
-import flwr.common.typing as ft
-from .serde import scalar_from_proto, scalar_to_proto, light_sec_agg_setup_cfg_res_to_proto, \
-    light_sec_agg_setup_cfg_res_from_proto, light_sec_agg_setup_cfg_ins_to_proto, light_sec_agg_setup_cfg_ins_from_proto \
-    , ask_encrypted_encoded_masks_ins_to_proto, ask_encrypted_encoded_masks_ins_from_proto, \
-    ask_masked_models_ins_from_proto, ask_masked_models_ins_to_proto, ask_aggregated_encoded_masks_ins_to_proto, \
-    ask_aggregated_encoded_masks_ins_from_proto, ask_aggregated_encoded_masks_res_to_proto, \
-    ask_encrypted_encoded_masks_res_to_proto, ask_masked_models_res_to_proto, ask_masked_models_res_from_proto, \
-    ask_encrypted_encoded_masks_res_from_proto, ask_aggregated_encoded_masks_res_from_proto, \
-    sa_server_msg_carrier_from_proto, sa_server_msg_carrier_to_proto, sa_client_msg_carrier_from_proto, \
-    sa_client_msg_carrier_to_proto
+
+from flwr.common import typing
+from flwr.common.typing import SAClientMessageCarrier, SAServerMessageCarrier
+from flwr.proto import transport_pb2 as pb2
+
+from .serde import (
+    sa_client_msg_carrier_from_proto,
+    sa_client_msg_carrier_to_proto,
+    sa_server_msg_carrier_from_proto,
+    sa_server_msg_carrier_to_proto,
+    scalar_from_proto,
+    scalar_to_proto,
+    status_from_proto,
+    status_to_proto,
+)
 
 
 def test_serialisation_deserialisation() -> None:
-    """Test if after serialization/deserialisation the np.ndarray is
-    identical."""
+    """Test if the np.ndarray is identical after (de-)serialization."""
 
     # Prepare
     scalars = [True, b"bytestr", 3.14, 9000, "Hello"]
@@ -45,88 +48,15 @@ def test_serialisation_deserialisation() -> None:
         assert actual == scalar
 
 
-def test_light_sec_agg():
-    # stage 0
-    inputs = [{'aa bb': 1.5, 'ccs': 1 << 20}]
-    for o in inputs:
-        serialized = light_sec_agg_setup_cfg_ins_to_proto(ft.LightSecAggSetupConfigIns(o))
-        actual = light_sec_agg_setup_cfg_ins_from_proto(serialized).sec_agg_cfg_dict
-        assert actual == o
-
-    inputs = [b'aldshfads', b'3121jlfdsa  sa']
-    for o in inputs:
-        serialized = light_sec_agg_setup_cfg_res_to_proto(ft.LightSecAggSetupConfigRes(o))
-        actual = light_sec_agg_setup_cfg_res_from_proto(serialized).pk
-        assert o == actual
-
-    # stage 1
-    plst = [ft.EncryptedEncodedMasksPacket(1, 2, b'ttfftt'),
-            ft.EncryptedEncodedMasksPacket(12, 998, b'%^&*ggggggfffff')]
-
-    def check_plst(lst1, lst2):
-        assert len(lst1) == len(lst2)
-        for o1, o2 in zip(lst1, lst2):
-            assert o1.source == o2.source and o1.destination == o2.destination
-            assert o1.ciphertext == o2.ciphertext
-
-    tmp_fn = ft.LightSecAggSetupConfigRes
-    inputs = [{1: tmp_fn(b'hahahaha'), 2: tmp_fn(b'any !%#*@) text'), 3: tmp_fn(b'balala neng liang')}]
-    for o in inputs:
-        serialized = ask_encrypted_encoded_masks_ins_to_proto(ft.AskEncryptedEncodedMasksIns(o))
-        actual = ask_encrypted_encoded_masks_ins_from_proto(serialized).public_keys_dict
-        assert len(o) == len(actual)
-        for k, v in o.items():
-            assert actual[k].pk == v.pk
-
-    inputs = [plst]
-    for o in inputs:
-        serialized = ask_encrypted_encoded_masks_res_to_proto(ft.AskEncryptedEncodedMasksRes(plst))
-        actual = ask_encrypted_encoded_masks_res_from_proto(serialized)
-        check_plst(o, actual.packet_list)
-
-    # stage 2
-
-    inputs = [ft.AskMaskedModelsIns(
-        packet_list=plst,
-        fit_ins=ft.FitIns(ft.Parameters([b'params'], 'my_type'), {'aa bb': 1.5, 'ccs': 1 << 20})
-    )]
-    for o in inputs:
-        serialized = ask_masked_models_ins_to_proto(o)
-        actual = ask_masked_models_ins_from_proto(serialized)
-        check_plst(o.packet_list, actual.packet_list)
-        assert o.fit_ins.parameters.tensors == actual.fit_ins.parameters.tensors
-        assert o.fit_ins.parameters.tensor_type == actual.fit_ins.parameters.tensor_type
-        assert o.fit_ins.config == actual.fit_ins.config
-
-    inputs = [ft.Parameters([b'1', b'2', b'3', b'acb'], 'tt1'), ft.Parameters([], '')]
-    for o in inputs:
-        serialized = ask_masked_models_res_to_proto(ft.AskMaskedModelsRes(o))
-        actual = ask_masked_models_res_from_proto(serialized)
-        assert o.tensors == actual.parameters.tensors
-        assert o.tensor_type == actual.parameters.tensor_type
-
-    # stage 3
-    inputs = [ft.AskAggregatedEncodedMasksIns([1, 2, 43215, 32144, 10])]
-    for o in inputs:
-        serialized = ask_aggregated_encoded_masks_ins_to_proto(o)
-        actual = ask_aggregated_encoded_masks_ins_from_proto(serialized)
-        assert o.surviving_clients == actual.surviving_clients
-
-    inputs = [ft.Parameters([b'a', b'b', b'c', b'023189'], 'tt1')]
-    for o in inputs:
-        serialized = ask_aggregated_encoded_masks_res_to_proto(ft.AskAggregatedEncodedMasksRes(o))
-        actual = ask_aggregated_encoded_masks_res_from_proto(serialized)
-        assert o.tensors == actual.aggregated_encoded_mask.tensors
-        assert o.tensor_type == actual.aggregated_encoded_mask.tensor_type
-
-
 def test_secure_aggregation():
+    """Test if data stored in SA carriers keep unchanged before and after (de-)serialization."""
+    import numpy as np
     inputs = [
-        ft.SAServerMessageCarrier('2'),
-        ft.SAServerMessageCarrier('2231', numpy_ndarray_list=[np.arange(100)]),
-        ft.SAServerMessageCarrier('sfas_', str2scalar={'dsa': b'safsqqq'}, bytes_list=[b'aaqq  a', b'test1123!~']),
-        ft.SAServerMessageCarrier('aa', parameters=ft.Parameters([b'parameters', b'params'], 'meters')),
-        ft.SAServerMessageCarrier('21dsva', fit_ins=ft.FitIns(ft.Parameters([b'a'], 'type'), dict())),
+        SAServerMessageCarrier('2'),
+        SAServerMessageCarrier('2231', numpy_ndarray_list=[np.arange(100)]),
+        SAServerMessageCarrier('sfas_', str2scalar={'dsa': b'safsqqq'}, bytes_list=[b'aaqq  a', b'test1123!~']),
+        SAServerMessageCarrier('aa', parameters=Parameters([b'parameters', b'params'], 'meters')),
+        SAServerMessageCarrier('21dsva', fit_ins=FitIns(Parameters([b'a'], 'type'), dict())),
     ]
 
     def check_lst(lst1, lst2):
@@ -140,14 +70,48 @@ def test_secure_aggregation():
         assert actual.identifier == o.identifier
 
     inputs = [
-        ft.SAClientMessageCarrier('2'),
-        ft.SAClientMessageCarrier('2231', numpy_ndarray_list=[np.arange(100)]),
-        ft.SAClientMessageCarrier('sfas_', str2scalar={'dsa': b'safsqqq'}, bytes_list=[b'aaqq  a', b'test1123!~']),
-        ft.SAClientMessageCarrier('aa', parameters=ft.Parameters([b'parameters', b'params'], 'meters')),
-        ft.SAClientMessageCarrier('21dsva', fit_res=ft.FitRes(ft.Parameters([b'a'], 'type'), None)),
+        SAClientMessageCarrier('2'),
+        SAClientMessageCarrier('2231', numpy_ndarray_list=[np.arange(100)]),
+        SAClientMessageCarrier('sfas_', str2scalar={'dsa': b'safsqqq'}, bytes_list=[b'aaqq  a', b'test1123!~']),
+        SAClientMessageCarrier('aa', parameters=Parameters([b'parameters', b'params'], 'meters')),
+        SAClientMessageCarrier('21dsva', fit_res=FitRes(Parameters([b'a'], 'type'), None)),
     ]
 
     for o in inputs:
         serialized = sa_client_msg_carrier_to_proto(o)
         actual = sa_client_msg_carrier_from_proto(serialized)
         assert actual.identifier == o.identifier
+
+
+def test_status_to_proto() -> None:
+    """Test status message (de-)serialization."""
+
+    # Prepare
+    code_msg = pb2.Code.OK
+    status_msg = pb2.Status(code=code_msg, message="Success")
+
+    code = typing.Code.OK
+    status = typing.Status(code=code, message="Success")
+
+    # Execute
+    actual_status_msg = status_to_proto(status=status)
+
+    # Assert
+    assert actual_status_msg == status_msg
+
+
+def test_status_from_proto() -> None:
+    """Test status message (de-)serialization."""
+
+    # Prepare
+    code_msg = pb2.Code.OK
+    status_msg = pb2.Status(code=code_msg, message="Success")
+
+    code = typing.Code.OK
+    status = typing.Status(code=code, message="Success")
+
+    # Execute
+    actual_status = status_from_proto(msg=status_msg)
+
+    # Assert
+    assert actual_status == status

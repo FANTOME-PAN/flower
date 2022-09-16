@@ -16,14 +16,14 @@
 
 
 from functools import reduce
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 
-from flwr.common import Weights
+from flwr.common import NDArrays
 
 
-def aggregate(results: List[Tuple[Weights, int]]) -> Weights:
+def aggregate(results: List[Tuple[NDArrays, int]]) -> NDArrays:
     """Compute weighted average."""
     # Calculate the total number of examples used during training
     num_examples_total = sum([num_examples for _, num_examples in results])
@@ -34,25 +34,23 @@ def aggregate(results: List[Tuple[Weights, int]]) -> Weights:
     ]
 
     # Compute average weights of each layer
-    weights_prime: Weights = [
+    weights_prime: NDArrays = [
         reduce(np.add, layer_updates) / num_examples_total
         for layer_updates in zip(*weighted_weights)
     ]
     return weights_prime
 
 
-def weighted_loss_avg(results: List[Tuple[int, float, Optional[float]]]) -> float:
+def weighted_loss_avg(results: List[Tuple[int, float]]) -> float:
     """Aggregate evaluation results obtained from multiple clients."""
-    num_total_evaluation_examples = sum(
-        [num_examples for num_examples, _, _ in results]
-    )
-    weighted_losses = [num_examples * loss for num_examples, loss, _ in results]
+    num_total_evaluation_examples = sum([num_examples for num_examples, _ in results])
+    weighted_losses = [num_examples * loss for num_examples, loss in results]
     return sum(weighted_losses) / num_total_evaluation_examples
 
 
 def aggregate_qffl(
-    weights: Weights, deltas: List[Weights], hs_fll: List[Weights]
-) -> Weights:
+    parameters: NDArrays, deltas: List[NDArrays], hs_fll: List[NDArrays]
+) -> NDArrays:
     """Compute weighted average based on  Q-FFL paper."""
     demominator = np.sum(np.asarray(hs_fll))
     scaled_deltas = []
@@ -64,5 +62,5 @@ def aggregate_qffl(
         for j in range(1, len(deltas)):
             tmp += scaled_deltas[j][i]
         updates.append(tmp)
-    new_weights = [(u - v) * 1.0 for u, v in zip(weights, updates)]
-    return new_weights
+    new_parameters = [(u - v) * 1.0 for u, v in zip(parameters, updates)]
+    return new_parameters

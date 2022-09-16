@@ -117,16 +117,16 @@ def main() -> None:
 
     # Run server
     fl.server.start_server(
-        args.server_address,
-        server,
+        server_address=args.server_address,
+        server=server,
         config={"num_rounds": args.rounds},
     )
 
 
-def fit_config(rnd: int) -> Dict[str, fl.common.Scalar]:
+def fit_config(server_round: int) -> Dict[str, fl.common.Scalar]:
     """Return a configuration with static batch size and (local) epochs."""
     config = {
-        "epoch_global": str(rnd),
+        "epoch_global": str(server_round),
         "epochs": str(1),
         "batch_size": str(args.batch_size),
         "num_workers": str(args.num_workers),
@@ -139,7 +139,7 @@ def set_weights(model: torch.nn.ModuleList, weights: fl.common.Weights) -> None:
     """Set model weights from a list of NumPy ndarrays."""
     state_dict = OrderedDict(
         {
-            k: torch.Tensor(np.atleast_1d(v))
+            k: torch.tensor(np.atleast_1d(v))
             for k, v in zip(model.state_dict().keys(), weights)
         }
     )

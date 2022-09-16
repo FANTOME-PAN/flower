@@ -159,12 +159,12 @@ def get_lr_schedule(
     def lr_schedule(epoch: int) -> float:
         """Learning rate schedule."""
         epoch += epoch_global
-        return lr_initial * lr_decay ** epoch
+        return lr_initial * lr_decay**epoch
 
     return lr_schedule
 
 
-def get_eval_fn(
+def get_evaluate_fn(
     model: tf.keras.Model, num_classes: int, xy_test: Tuple[np.ndarray, np.ndarray]
 ) -> Callable[[fl.common.Weights], Optional[Tuple[float, float]]]:
     """Return an evaluation function for centralized evaluation."""
