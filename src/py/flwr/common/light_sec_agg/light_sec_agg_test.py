@@ -7,7 +7,7 @@ from flwr.server.strategy.light_sec_agg_fedavg import LightSecAggFedAvg
 from flwr.client.abc_sa_client_wrapper import SAClientWrapper
 from flwr.common.typing import LightSecAggSetupConfigIns, LightSecAggSetupConfigRes, AskEncryptedEncodedMasksIns, \
     EncryptedEncodedMasksPacket, AskMaskedModelsIns, \
-    AskAggregatedEncodedMasksIns, SAServerMessageCarrier, SAClientMessageCarrier
+    AskAggregatedEncodedMasksIns, SAServerMessageCarrier, SAClientMessageCarrier, NDArrays
 '''weights: Weights = [np.array([[-0.2, -0.5, 1.9], [0.0, 2.4, -1.9]]),
                     np.array([[0.2, 0.5, -1.9], [0.0, -2.4, 1.9]])]
 quantized_weights = sec_agg_primitives.quantize(
@@ -48,7 +48,7 @@ model = [np.zeros(1000, dtype=float)]
 
 
 class CifarClient(fl.client.NumPyClient):
-    def get_parameters(self):  # type: ignore
+    def get_parameters(self, config: Dict[str, Scalar]) -> NDArrays: # type: ignore
         return model
 
     def fit(self, parameters, config):  # type: ignore

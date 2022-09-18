@@ -33,7 +33,7 @@ import pickle
 import numpy as np
 import json
 
-from flwr.common.typing import Weights
+from flwr.common.typing import NDArrays
 
 # String Concatenation ===================================================================
 
@@ -220,7 +220,7 @@ def rand_bytes(num: int = 32) -> bytes:
 # Pseudo random generator for creating masks.
 
 # the one use numpy PRG
-def pseudo_rand_gen(seed: bytes, num_range: int, dimensions_list: List[Tuple]) -> Weights:
+def pseudo_rand_gen(seed: bytes, num_range: int, dimensions_list: List[Tuple]) -> NDArrays:
     assert len(seed) & 0x3 == 0
     seed32 = 0
     for i in range(0, len(seed), 4):

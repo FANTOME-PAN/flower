@@ -15,7 +15,7 @@
 import galois
 from flwr.common.sa_primitives.lightsecagg_primitives import mask_encoding, compute_aggregate_encoded_mask, model_masking
 import numpy as np
-from flwr.common.parameter import parameters_to_weights, weights_to_parameters
+from flwr.common.parameter import parameters_to_ndarrays, ndarrays_to_parameters
 from flwr.common.typing import Parameters
 from flwr.common.sa_primitives import quantize, encrypt, decrypt, generate_shared_key, generate_key_pairs, \
     public_key_to_bytes, bytes_to_public_key, weights_multiply, factor_weights_combine, weights_zero_generate
@@ -34,14 +34,14 @@ def padding(d, U, T):
 
 
 def encrypt_sub_mask(key, sub_mask):
-    ret = weights_to_parameters([sub_mask])
+    ret = ndarrays_to_parameters([sub_mask])
     plaintext = ret.tensors[0]
     return encrypt(key, plaintext)
 
 
 def decrypt_sub_mask(key, ciphertext):
     plaintext = decrypt(key, ciphertext)
-    ret = parameters_to_weights(Parameters(
+    ret = parameters_to_ndarrays(Parameters(
         tensors=[plaintext],
         tensor_type="numpy.ndarray"
     ))
@@ -72,7 +72,7 @@ def setup_config(client: SAClientWrapper, config_dict: Dict[str, Scalar]) -> byt
         client.d = padding(client.vector_length + 1, client.U, client.T)
     else:
     # End =================================================================
-        weights = parameters_to_weights(client.get_parameters())
+        weights = parameters_to_ndarrays(client.get_parameters({}))
         client.vector_length = sum([o.size for o in weights])
         client.d = padding(client.vector_length + 1, client.U, client.T)
     # dict key is the ID of another client (int)
@@ -160,11 +160,11 @@ def ask_masked_models(client, packets, fit_ins):
 
     quantized_weights = model_masking(quantized_weights, client.msk, client.GF)
     log(INFO, "LightSecAgg Stage 2 Completed: Sent Masked Models")
-    return weights_to_parameters(quantized_weights)
+    return ndarrays_to_parameters(quantized_weights)
 
 
 def ask_aggregated_encoded_masks(client, active_clients):
     agg_msk = compute_aggregate_encoded_mask(client.encoded_mask_dict, client.GF, active_clients)
     log(INFO, "SecAgg Stage 3 Completed: Sent Aggregated Encoded Masks for Unmasking")
-    return weights_to_parameters([agg_msk])
+    return ndarrays_to_parameters([agg_msk])
 

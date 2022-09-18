@@ -207,19 +207,19 @@ def start_numpy_client(
     --------
     Starting a client with an insecure server connection:
 
-    >>> start_client(
-    >>>     server_address=localhost:8080,
-    >>>     client=FlowerClient(),
-    >>> )
+    # >>> start_client(
+    # >>>     server_address=localhost:8080,
+    # >>>     client=FlowerClient(),
+    # >>> )
 
     Starting a SSL-enabled client:
 
-    >>> from pathlib import Path
-    >>> start_client(
-    >>>     server_address=localhost:8080,
-    >>>     client=FlowerClient(),
-    >>>     root_certificates=Path("/crts/root.pem").read_bytes(),
-    >>> )
+    # >>> from pathlib import Path
+    # >>> start_client(
+    # >>>     server_address=localhost:8080,
+    # >>>     client=FlowerClient(),
+    # >>>     root_certificates=Path("/crts/root.pem").read_bytes(),
+    # >>> )
     """
 
     # Start

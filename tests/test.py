@@ -1,12 +1,14 @@
 import timeit
 import sys
 import os
+print(sys.path)
 pth = os.path.abspath("./src/py")
+print(f"add to path: {pth}")
 sys.path.append(pth)
 #r"C:\Users\MSI-NB\Source\Repos\FANTOME-PAN\flower\src\py"
 from flwr_crypto_cpp import create_shares, combine_shares
-from flwr.common.sec_agg_plus import sec_agg_test
 from flwr.common.light_sec_agg import light_sec_agg_test
+from flwr.common.sec_agg_plus import sec_agg_test
 import random
 
 #from flwr.common.sec_agg.sec_agg_primitives import combine_shares, create_shares

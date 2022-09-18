@@ -72,7 +72,7 @@ def handle(
         return _evaluate(client, server_msg.evaluate_ins), 0, True
     if server_msg.HasField("sa_msg_carrier"):
         return _sa_respond(client, server_msg.sa_msg_carrier), 0, True
-    raise UnkownServerMessage()
+    raise UnknownServerMessage()
 
 
 def _reconnect(

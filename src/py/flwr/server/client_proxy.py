@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from flwr.common import (
-    AskKeysRes
+    # AskKeysRes,
     DisconnectRes,
     EvaluateIns,
     EvaluateRes,
@@ -81,6 +81,6 @@ class ClientProxy(ABC):
     ) -> DisconnectRes:
         """Disconnect and (optionally) reconnect later."""
 
-    @abstractmethod
-    def ask_keys(self) -> AskKeysRes:
-        """Ask for public keys"""
+    # @abstractmethod
+    # def ask_keys(self) -> AskKeysRes:
+    #     """Ask for public keys"""

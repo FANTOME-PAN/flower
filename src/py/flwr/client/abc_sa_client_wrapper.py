@@ -18,7 +18,10 @@ from flwr.common import (
     EvaluateRes,
     FitIns,
     FitRes,
-    ParametersRes,
+    GetParametersIns,
+    GetParametersRes,
+    GetPropertiesIns,
+    GetPropertiesRes,
 
 )
 from flwr.common.typing import SAServerMessageCarrier, SAClientMessageCarrier
@@ -32,9 +35,12 @@ class SAClientWrapper(Client, ABC):
         self.client = c
         self.__sec_id = None
 
-    def get_parameters(self) -> ParametersRes:
+    def get_properties(self, ins: GetPropertiesIns) -> GetPropertiesRes:
+        return self.client.get_properties(ins)
+
+    def get_parameters(self, ins: GetParametersIns) -> GetParametersRes:
         """Return the current local model parameters."""
-        return self.client.get_parameters()
+        return self.client.get_parameters(ins)
 
     def fit(self, ins: FitIns) -> FitRes:
         return self.client.fit(ins)
@@ -49,7 +55,7 @@ class SAClientWrapper(Client, ABC):
     def get_sec_id(self) -> int:
         if self.__sec_id:
             return self.__sec_id
-        raise Exception("Unassigned secure ID")
+        raise Exception("Secure ID has not been assigned.")
 
     def set_sec_id(self, idx: int):
         self.__sec_id = idx

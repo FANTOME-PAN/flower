@@ -1,6 +1,6 @@
-from flwr.common.typing import Weights
-import numpy as np
 from logging import log, WARNING
+import numpy as np
+from typing import List
 
 # Weight Quantization ======================================================================
 
@@ -17,7 +17,7 @@ def stochastic_round(arr: np.ndarray):
     return ret
 
 
-def quantize(weight: Weights, clipping_range: float, target_range: int) -> Weights:
+def quantize(weight: List[np.ndarray], clipping_range: float, target_range: int) -> List[np.ndarray]:
     quantized_list = []
     check_clipping_range(weight, clipping_range)
     quantizer = target_range/(2*clipping_range)
@@ -31,7 +31,8 @@ def quantize(weight: Weights, clipping_range: float, target_range: int) -> Weigh
 
 # quantize weight vectors (unbounded)
 # mod k (i.e., mod_range here)
-def quantize_unbounded(weight: Weights, clipping_range: float, target_range: int, mod_range: int) -> Weights:
+def quantize_unbounded(weight: List[np.ndarray], clipping_range: float, target_range: int, mod_range: int)\
+        -> List[np.ndarray]:
     quantized_list = []
     check_clipping_range(weight, clipping_range)
     quantizer = target_range/(2*clipping_range)
@@ -50,7 +51,7 @@ def quantize_unbounded(weight: Weights, clipping_range: float, target_range: int
 # Throw warning if there exists numbers that exceed it
 
 
-def check_clipping_range(weight: Weights, clipping_range: float):
+def check_clipping_range(weight: List[np.ndarray], clipping_range: float):
     for arr in weight:
         for x in arr.flatten():
             if(x < -clipping_range or x > clipping_range):
@@ -62,7 +63,7 @@ def check_clipping_range(weight: Weights, clipping_range: float):
 # Convert to float
 
 
-def reverse_quantize(weight: Weights, clipping_range: float, target_range: int) -> Weights:
+def reverse_quantize(weight: List[np.ndarray], clipping_range: float, target_range: int) -> List[np.ndarray]:
     reverse_quantized_list = []
     quantizer = (2 * clipping_range) / target_range
     shift = -clipping_range

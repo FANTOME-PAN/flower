@@ -1,26 +1,13 @@
 from __future__ import division
 from __future__ import print_function
-import math
-from logging import WARNING, log
-import functools
-from typing import List, Tuple
+import base64
+from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import serialization
-import base64
-from Crypto.Util.Padding import pad, unpad
-from Crypto.Protocol.SecretSharing import Shamir
-from concurrent.futures import ThreadPoolExecutor
 import os
-import random
-import pickle
-import numpy as np
-
-from numpy.core.fromnumeric import clip
-
-from flwr.common.typing import Weights
+from typing import Tuple
 
 # Key Generation  ====================================================================
 

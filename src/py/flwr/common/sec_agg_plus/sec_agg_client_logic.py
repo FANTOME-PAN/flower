@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-from flwr.common.parameter import weights_to_parameters
+from flwr.common.parameter import ndarrays_to_parameters
 from flwr.common.typing import ShareKeysPacket, Scalar, Parameters, AskKeysRes
 from flwr.common.sa_primitives import secaggplus_primitives
 from flwr_crypto_cpp import create_shares
@@ -167,7 +167,7 @@ def ask_vectors(client, packet_list, fit_ins) -> Parameters:
         if client.sec_agg_id % 20 < client.test_dropout_value:
             log(ERROR, "Force dropout due to testing!!")
             raise Exception("Force dropout due to testing")
-        weights: Weights = weights_zero_generate(client.test_vector_shape)
+        weights = weights_zero_generate(client.test_vector_shape)
      # IMPORTANT NEED SOME FUNCTION TO GET CORRECT WEIGHT FACTOR
     # NOW WE HARD CODE IT AS 1
     # Generally, should be fit_res.num_examples
@@ -211,7 +211,7 @@ def ask_vectors(client, packet_list, fit_ins) -> Parameters:
     # Take mod of final weight update vector and return to server
     quantized_weights = weights_mod(quantized_weights, client.mod_range)
     log(INFO, "SecAgg Stage 3 Completed: Sent Vectors")
-    return weights_to_parameters(quantized_weights)
+    return ndarrays_to_parameters(quantized_weights)
 
 
 def unmask_vectors(client, available_clients, dropout_clients) -> Dict[int, bytes]:
