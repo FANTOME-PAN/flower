@@ -33,7 +33,7 @@ class SAClientWrapper(Client, ABC):
 
     def __init__(self, c: Client) -> None:
         self.client = c
-        self.__sec_id = None
+        self.sec_id = None
 
     def get_properties(self, ins: GetPropertiesIns) -> GetPropertiesRes:
         return self.client.get_properties(ins)
@@ -51,11 +51,6 @@ class SAClientWrapper(Client, ABC):
     @abstractmethod
     def sa_respond(self, ins: SAServerMessageCarrier) -> SAClientMessageCarrier:
         """response to the server for Secure Aggregation"""
-
-    def get_sec_id(self) -> int:
-        if self.__sec_id:
-            return self.__sec_id
-        raise Exception("Secure ID has not been assigned.")
 
     def set_sec_id(self, idx: int):
         self.__sec_id = idx

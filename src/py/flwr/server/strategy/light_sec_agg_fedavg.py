@@ -30,9 +30,9 @@ from flwr.common import (
     FitRes,
     Parameters,
     Scalar,
-    Weights,
-    parameters_to_weights,
-    weights_to_parameters,
+    NDArrays,
+    parameters_to_ndarrays,
+    ndarrays_to_parameters,
 )
 
 FitResultsAndFailures = Tuple[List[Tuple[ClientProxy, FitRes]], List[BaseException]]
@@ -54,7 +54,7 @@ class LightSecAggFedAvg(SecureAggregationFitRound, FedAvg):
         min_eval_clients: int = 2,
         min_available_clients: int = 2,
         eval_fn: Optional[
-            Callable[[Weights], Optional[Tuple[float, Dict[str, Scalar]]]]
+            Callable[[NDArrays], Optional[Tuple[float, Dict[str, Scalar]]]]
         ] = None,
         on_fit_config_fn: Optional[Callable[[int], Dict[str, Scalar]]] = None,
         on_evaluate_config_fn: Optional[Callable[[int], Dict[str, Scalar]]] = None,
@@ -63,11 +63,11 @@ class LightSecAggFedAvg(SecureAggregationFitRound, FedAvg):
         cfg_dict: Dict[str, Scalar] = None
     ) -> None:
         FedAvg.__init__(self, fraction_fit=fraction_fit,
-                        fraction_eval=fraction_eval,
+                        fraction_evaluate=fraction_eval,
                         min_fit_clients=min_fit_clients,
-                        min_eval_clients=min_eval_clients,
+                        min_evaluate_clients=min_eval_clients,
                         min_available_clients=min_available_clients,
-                        eval_fn=eval_fn,
+                        evaluate_fn=eval_fn,
                         on_fit_config_fn=on_fit_config_fn,
                         on_evaluate_config_fn=on_evaluate_config_fn,
                         accept_failures=accept_failures,
@@ -110,7 +110,7 @@ class LightSecAggFedAvg(SecureAggregationFitRound, FedAvg):
             vector_length = self.cfg_dict['test_vector_dimension']
         # End =================================================================
         else:
-            init_weights = parameters_to_weights(server.parameters)
+            init_weights = parameters_to_ndarrays(server.parameters)
             vector_length = sum([o.size for o in init_weights])
         d = padding(vector_length + 1, self.U, self.T)
 
@@ -139,7 +139,7 @@ class LightSecAggFedAvg(SecureAggregationFitRound, FedAvg):
         results_and_failures = self.sa_request([(k, SAServerMessageCarrier(
             identifier='0',
             str2scalar=new_dict(self.cfg_dict, v)
-        )) for k, v in proxy2id.items()])
+        )) for k, v in proxy2id.items()], 300000)
 
         tm.tic('s0')
         res_lst, active_clients = check_and_update(results_and_failures, 0)
@@ -150,7 +150,7 @@ class LightSecAggFedAvg(SecureAggregationFitRound, FedAvg):
         log(INFO, "LightSecAgg Stage 1: Ask encrypted encoded sub-masks")
         # results_and_failures = self.ask_encrypted_encoded_masks(active_clients, public_key_dict)
         results_and_failures = self.sa_request([
-            (c, SAServerMessageCarrier('1', str2scalar=public_key_dict)) for c in active_clients])
+            (c, SAServerMessageCarrier('1', str2scalar=public_key_dict)) for c in active_clients], 2000)
 
         tm.tic('s1')
         res_lst, active_clients = check_and_update(results_and_failures, 1)
@@ -172,10 +172,10 @@ class LightSecAggFedAvg(SecureAggregationFitRound, FedAvg):
         res_lst, active_clients = check_and_update(results_and_failures, 2)
         # compute the aggregated masked model
         GF = self.GF
-        agg_model = parameters_to_weights(res_lst[0][1].parameters)
+        agg_model = parameters_to_ndarrays(res_lst[0][1].parameters)
         agg_model = [o.view(GF) for o in agg_model]
         for i in range(1, len(res_lst)):
-            weights = parameters_to_weights(res_lst[i][1].parameters)
+            weights = parameters_to_ndarrays(res_lst[i][1].parameters)
             weights = [o.view(GF) for o in weights]
             agg_model = weights_addition(agg_model, weights)
         tm.toc('s2')
@@ -195,7 +195,7 @@ class LightSecAggFedAvg(SecureAggregationFitRound, FedAvg):
         msk_buffer = np.zeros((self.U, d // (self.U - self.T)), dtype=np.int32).view(GF)
         active_ids = np.array([proxy2id[c] for c in active_clients])[:self.U]
         for i in range(self.U):
-            tmp = parameters_to_weights(res_lst[i][1].parameters)[0]
+            tmp = parameters_to_ndarrays(res_lst[i][1].parameters)[0]
             msk_buffer[i, :] = tmp
         agg_msk: np.ndarray = LCC_decoding_with_points(msk_buffer, alpha_s[active_ids], beta_s, GF)
         agg_msk = agg_msk.reshape(-1, 1)[:d]
@@ -220,7 +220,7 @@ class LightSecAggFedAvg(SecureAggregationFitRound, FedAvg):
         f.write('mask generation time: %f (%.2f%%)\n' % (0.1, 0.1))
         f.write('num of dropouts: %d\n' % num_dropouts)
         f.close()
-        return weights_to_parameters(agg_model), None, None
+        return ndarrays_to_parameters(agg_model), None, None
 
 
 

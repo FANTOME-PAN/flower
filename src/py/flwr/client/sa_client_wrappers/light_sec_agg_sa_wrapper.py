@@ -22,7 +22,7 @@ class LightSecAggWrapper(SAClientWrapper):
             packet_dict = dict([(str(p[1]), p[2]) for p in res])
             ret_msg = SAClientMessageCarrier(identifier='1', str2scalar=packet_dict)
         elif ins.identifier == '2':
-            sec_id = self.get_sec_id()
+            sec_id = self.sec_id
             packets = [(int(k), sec_id, v) for k, v in ins.str2scalar.items()]
             res = cl.ask_masked_models(self, packets, ins.fit_ins)
             ret_msg = SAClientMessageCarrier(identifier='2', parameters=res)
@@ -33,7 +33,7 @@ class LightSecAggWrapper(SAClientWrapper):
         else:
             raise Exception("Invalid identifier")
         self.tm.toc('s' + ins.identifier)
-        if self.get_sec_id() == 6:
+        if self.sec_id == 6:
             f = open("log.txt", "a")
             f.write(f"Client without communication stage {ins.identifier}:{self.tm.get('s' + ins.identifier)} \n")
             f.close()

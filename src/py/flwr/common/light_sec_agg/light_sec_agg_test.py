@@ -3,11 +3,12 @@ import numpy as np
 import time
 from flwr.common import GRPC_MAX_MESSAGE_LENGTH
 from multiprocessing import Process
+from flwr.server import ServerConfig
 from flwr.server.strategy.light_sec_agg_fedavg import LightSecAggFedAvg
 from flwr.client.abc_sa_client_wrapper import SAClientWrapper
-from flwr.common.typing import LightSecAggSetupConfigIns, LightSecAggSetupConfigRes, AskEncryptedEncodedMasksIns, \
-    EncryptedEncodedMasksPacket, AskMaskedModelsIns, \
-    AskAggregatedEncodedMasksIns, SAServerMessageCarrier, SAClientMessageCarrier, NDArrays
+from flwr.common.typing import SAServerMessageCarrier, SAClientMessageCarrier, NDArrays, Scalar
+import flwr.common.light_sec_agg.client_logic as cl
+from typing import Dict
 '''weights: Weights = [np.array([[-0.2, -0.5, 1.9], [0.0, 2.4, -1.9]]),
                     np.array([[0.2, 0.5, -1.9], [0.0, -2.4, 1.9]])]
 quantized_weights = sec_agg_primitives.quantize(
@@ -18,28 +19,29 @@ print(quantized_weights)'''
 
 class MyLightSecAggWrapper(SAClientWrapper):
     """Wrapper which adds LightSecAgg methods."""
-
     def sa_respond(self, ins: SAServerMessageCarrier) -> SAClientMessageCarrier:
         if ins.identifier == '0':
-            new_ins = LightSecAggSetupConfigIns(ins.str2scalar)
-            res = self.setup_config(new_ins)
-            return SAClientMessageCarrier(identifier='0', bytes_list=[res.pk])
-        if ins.identifier == '1':
-            public_keys_dict = dict([(int(k), LightSecAggSetupConfigRes(v)) for k, v in ins.str2scalar.items()])
-            new_ins = AskEncryptedEncodedMasksIns(public_keys_dict)
-            res = self.ask_encrypted_encoded_masks(new_ins)
-            packet_dict = dict([(str(p.destination), p.ciphertext) for p in res.packet_list])
-            return SAClientMessageCarrier(identifier='1', str2scalar=packet_dict)
-        if ins.identifier == '2':
-            packets = [EncryptedEncodedMasksPacket(int(k), self.id, v) for k, v in ins.str2scalar.items()]
-            new_ins = AskMaskedModelsIns(packets, ins.fit_ins)
-            res = self.ask_masked_models(new_ins)
-            return SAClientMessageCarrier(identifier='2', parameters=res.parameters)
-        if ins.identifier == '3':
-            new_ins = AskAggregatedEncodedMasksIns(ins.numpy_ndarray_list[0].tolist())
-            res = self.ask_aggregated_encoded_masks(new_ins)
-            print("beep beep!!!")
-            return SAClientMessageCarrier(identifier='3', parameters=res.aggregated_encoded_mask)
+            print("Beep Beep! My first step!")
+            res = cl.setup_config(self, ins.str2scalar)
+            ret_msg = SAClientMessageCarrier(identifier='0', bytes_list=[res])
+        elif ins.identifier == '1':
+            public_keys_dict = dict([(int(k), v) for k, v in ins.str2scalar.items()])
+            res = cl.ask_encrypted_encoded_masks(self, public_keys_dict)
+            packet_dict = dict([(str(p[1]), p[2]) for p in res])
+            ret_msg = SAClientMessageCarrier(identifier='1', str2scalar=packet_dict)
+        elif ins.identifier == '2':
+            sec_id = self.get_sec_id()
+            packets = [(int(k), sec_id, v) for k, v in ins.str2scalar.items()]
+            res = cl.ask_masked_models(self, packets, ins.fit_ins)
+            ret_msg = SAClientMessageCarrier(identifier='2', parameters=res)
+        elif ins.identifier == '3':
+            print("Oink Oink! My last step! This should be my customized SA Wrapper!")
+            active_clients = ins.numpy_ndarray_list[0].tolist()
+            res = cl.ask_aggregated_encoded_masks(self, active_clients)
+            ret_msg = SAClientMessageCarrier(identifier='3', parameters=res)
+        else:
+            raise Exception("Invalid identifier")
+        return ret_msg
 
 # Testing
 # Define Flower client
@@ -55,7 +57,7 @@ class CifarClient(fl.client.NumPyClient):
         return model, 1, {}
 
     def evaluate(self, parameters, config):  # type: ignore
-        return 0, 1, {"accuracy": 0}
+        return 0., 1, {"accuracy": 0}
 # model = tf.keras.applications.MobileNetV2((32, 32, 3), classes=10, weights=None)
 # model.compile("adam", "sparse_categorical_crossentropy", metrics=["accuracy"])
 # # Load CIFAR-10 dataset
@@ -79,8 +81,7 @@ class CifarClient(fl.client.NumPyClient):
 
 def test_start_server(sample_num=10, T=4, U=7, p=(1 << 31) - 1, vector_dimension=100000, dropout_value=0,
                       num_rounds=1):
-    fl.server.start_server("localhost:8080", config={
-        "num_rounds": num_rounds, "sec_agg": 2},
+    fl.server.start_server(server_address="localhost:8080", config=ServerConfig(num_rounds, None, True),
                            strategy=LightSecAggFedAvg(fraction_fit=1, min_fit_clients=sample_num,
                                                       min_available_clients=sample_num,
                                                       cfg_dict={"sample_num": sample_num,
@@ -97,7 +98,8 @@ def test_start_server(sample_num=10, T=4, U=7, p=(1 << 31) - 1, vector_dimension
 def test_start_client(server_address: str,
                       client,
                       grpc_max_message_length: int = GRPC_MAX_MESSAGE_LENGTH, ):
-    fl.client.start_numpy_client(server_address, client, grpc_max_message_length, sa_protocol='lightsecagg')
+    fl.client.start_numpy_client(server_address=server_address, client=client,
+                                 grpc_max_message_length=grpc_max_message_length, sa_protocol='lightsecagg')
 
 
 def test_start_simulation(sample_num=10, T=4, U=7, p=(1 << 31) - 1, vector_dimension=100000, dropout_value=0,

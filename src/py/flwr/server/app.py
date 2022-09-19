@@ -109,17 +109,17 @@ def start_server(  # pylint: disable=too-many-arguments
     --------
     Starting an insecure server:
 
-    >>> start_server()
+    # >>> start_server()
 
     Starting an SSL-enabled server:
 
-    >>> start_server(
-    >>>     certificates=(
-    >>>         Path("/crts/root.pem").read_bytes(),
-    >>>         Path("/crts/localhost.crt").read_bytes(),
-    >>>         Path("/crts/localhost.key").read_bytes()
-    >>>     )
-    >>> )
+    # >>> start_server(
+    # >>>     certificates=(
+    # >>>         Path("/crts/root.pem").read_bytes(),
+    # >>>         Path("/crts/localhost.crt").read_bytes(),
+    # >>>         Path("/crts/localhost.key").read_bytes()
+    # >>>     )
+    # >>> )
     """
 
     # Initialize server and server config

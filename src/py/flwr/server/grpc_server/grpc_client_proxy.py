@@ -94,11 +94,15 @@ class GrpcClientProxy(ClientProxy):
         fit_res = serde.fit_res_from_proto(client_msg.fit_res)
         return fit_res
 
-    def sa_request(self, ins: SAServerMessageCarrier) -> SAClientMessageCarrier:
+    def sa_request(self, ins: SAServerMessageCarrier, timeout: Optional[float]) -> SAClientMessageCarrier:
         request_msg = serde.sa_server_msg_carrier_to_proto(ins)
-        client_msg: ClientMessage = self.bridge.request(
-            ServerMessage(sa_msg_carrier=request_msg)
+        res_wrapper: ResWrapper = self.bridge.request(
+            ins_wrapper=InsWrapper(
+                server_message=ServerMessage(sa_msg_carrier=request_msg),
+                timeout=timeout
+            )
         )
+        client_msg: ClientMessage = res_wrapper.client_message
         serde.check_sa_error(client_msg.sa_msg_carrier)
         response = serde.sa_client_msg_carrier_from_proto(client_msg.sa_msg_carrier)
         return response

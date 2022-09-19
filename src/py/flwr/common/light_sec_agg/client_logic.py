@@ -52,9 +52,9 @@ def decrypt_sub_mask(key, ciphertext):
 def setup_config(client: SAClientWrapper, config_dict: Dict[str, Scalar]) -> bytes:
     # Assigning parameter values to object fields
     cfg = config_dict
+    client.sec_id = cfg['id']
     client.N = cfg['sample_num']
     client.id = cfg['id']
-    client.set_sec_id(cfg['id'])
     client.T = cfg['privacy_guarantee']
     client.U = cfg['min_clients']
     client.p = cfg['prime_number']

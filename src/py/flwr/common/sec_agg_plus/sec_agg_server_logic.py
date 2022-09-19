@@ -15,7 +15,7 @@
 from logging import INFO, WARNING
 import math
 from typing import Dict, List, Optional, Tuple
-from flwr.common.parameter import parameters_to_weights, weights_to_parameters
+from flwr.common.parameter import parameters_to_ndarrays, ndarrays_to_parameters
 from flwr.common.typing import AskKeysRes, AskVectorsRes, FitIns, FitRes, Parameters, Scalar, \
     SetupParamRes, ShareKeysPacket, ShareKeysRes, UnmaskVectorsRes
 from flwr.server.client_proxy import ClientProxy
@@ -55,7 +55,7 @@ def sec_agg_fit_round(strategy: SecureAggregationFitRound, server, rnd: int
     tm = Timer()
     # Sample clients
     client_instruction_list = strategy.configure_fit(
-        rnd=rnd, parameters=server.parameters, client_manager=server.client_manager())
+        rnd, server.parameters, server.client_manager())
     proxy2id: Dict[ClientProxy, int] = {}
     setup_param_clients: Dict[int, ClientProxy] = {}
     client_instructions: Dict[int, FitIns] = {}
@@ -174,7 +174,7 @@ def sec_agg_fit_round(strategy: SecureAggregationFitRound, server, rnd: int
         raise Exception("Not enough available clients after ask vectors stage")
     # Get shape of vector sent by first client
     masked_vector = weights_zero_generate(
-        [i.shape for i in parameters_to_weights(ask_vectors_results[0][1].parameters)])
+        [i.shape for i in parameters_to_ndarrays(ask_vectors_results[0][1].parameters)])
     # Add all collected masked vectors and compuute available and dropout clients set
     unmask_vectors_clients: Dict[int, ClientProxy] = {}
     dropout_clients = ask_vectors_clients.copy()
@@ -184,7 +184,7 @@ def sec_agg_fit_round(strategy: SecureAggregationFitRound, server, rnd: int
             unmask_vectors_clients[idx] = client
             dropout_clients.pop(idx)
             client_parameters = ask_vectors_results[pos][1].parameters
-            masked_vector = weights_addition(masked_vector, parameters_to_weights(client_parameters))
+            masked_vector = weights_addition(masked_vector, parameters_to_ndarrays(client_parameters))
     masked_vector = weights_mod(masked_vector, sec_agg_param_dict['mod_range'])
     tm.toc('s2')
     # === Stage 3: Unmask Vectors ===
@@ -261,7 +261,7 @@ def sec_agg_fit_round(strategy: SecureAggregationFitRound, server, rnd: int
     aggregated_vector = reverse_quantize(
         masked_vector, sec_agg_param_dict['clipping_range'], sec_agg_param_dict['target_range'])
     print(aggregated_vector[:4])
-    aggregated_parameters = weights_to_parameters(aggregated_vector)
+    aggregated_parameters = ndarrays_to_parameters(aggregated_vector)
     tm.toc('s3')
     tm.toc()
     times = tm.get_all()

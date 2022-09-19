@@ -51,7 +51,7 @@ class SecAggPlusWrapper(SAClientWrapper):
         else:
             raise Exception("Invalid identifier")
         self.tm.toc('s' + ins.identifier)
-        if self.get_sec_id() == 6:
+        if self.sec_id == 6:
             f = open("log.txt", "a")
             f.write(f"Client without communication stage {ins.identifier}:{self.tm.get('s' + ins.identifier)} \n")
             if ins.identifier == '3':

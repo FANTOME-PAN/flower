@@ -5,8 +5,10 @@ import os
 import time
 from flwr.common import GRPC_MAX_MESSAGE_LENGTH
 from multiprocessing import Process
+from flwr.server import ServerConfig
 from flwr.server.strategy.sec_agg_fedavg import SecAggFedAvg
-
+from flwr.common.typing import NDArrays, Scalar
+from typing import Dict
 # Testing
 # Define Flower client
 
@@ -19,19 +21,18 @@ model = [np.zeros(1, dtype=float)]
 
 
 class CifarClient(fl.client.NumPyClient):
-    def get_parameters(self):  # type: ignore
+    def get_parameters(self, config: Dict[str, Scalar]) -> NDArrays: # type: ignore
         return model
 
     def fit(self, parameters, config):  # type: ignore
         return model, 1, {}
 
     def evaluate(self, parameters, config):  # type: ignore
-        return 0, 1, {"accuracy": 0}
+        return 0., 1, {"accuracy": 0}
 
 
 def test_start_server(sample_num=2, min_num=2, share_num=2, threshold=2, vector_dimension=100000, dropout_value=0, num_rounds=1):
-    fl.server.start_server("localhost:8080", config={
-                           "num_rounds": num_rounds, "sec_agg": 1},
+    fl.server.start_server(server_address="localhost:8080", config=ServerConfig(num_rounds, None, True),
                            strategy=SecAggFedAvg(fraction_fit=1, min_fit_clients=sample_num, min_available_clients=sample_num,
                                                  sec_agg_param_dict={"min_num": min_num,
                                                                      "share_num": share_num,
@@ -44,7 +45,8 @@ def test_start_server(sample_num=2, min_num=2, share_num=2, threshold=2, vector_
 def test_start_client(server_address: str,
                       client,
                       grpc_max_message_length: int = GRPC_MAX_MESSAGE_LENGTH,):
-    fl.client.start_numpy_client(server_address, client, grpc_max_message_length, 'secagg')
+    fl.client.start_numpy_client(server_address=server_address, client=client,
+                                 grpc_max_message_length=grpc_max_message_length, sa_protocol='secagg+')
 
 
 def test_start_simulation(sample_num=2, min_num=2, share_num=2, threshold=2, vector_dimension=100000, dropout_value=0, num_rounds=1):

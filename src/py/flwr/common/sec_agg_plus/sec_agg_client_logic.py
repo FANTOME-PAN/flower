@@ -29,9 +29,9 @@ def setup_param(client: SAClientWrapper, setup_param_dict: Dict[str, Scalar]) ->
     # Assigning parameter values to object fields
     sec_agg_param_dict = setup_param_dict
     client.sample_num = sec_agg_param_dict['sample_num']
+    client.sec_id = sec_agg_param_dict['sec_agg_id']
     client.sec_agg_id = sec_agg_param_dict['sec_agg_id']
     # client.id = sec_agg_param_dict['sec_agg_id']
-    client.set_sec_id(sec_agg_param_dict['sec_agg_id'])
     client.share_num = sec_agg_param_dict['share_num']
     client.threshold = sec_agg_param_dict['threshold']
     client.clipping_range = sec_agg_param_dict['clipping_range']

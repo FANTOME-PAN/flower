@@ -5,7 +5,6 @@ from flwr.common.typing import Scalar, Parameters, FitRes, SAServerMessageCarrie
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.grpc_server.grpc_client_proxy import GrpcClientProxy
 
-
 FitResultsAndFailures = Tuple[List[Tuple[ClientProxy, FitRes]], List[BaseException]]
 
 SecureAggregationResultsAndFailures = Tuple[
@@ -20,18 +19,19 @@ class SecureAggregationFitRound(ABC):
         """fit round"""
 
     @staticmethod
-    def sa_request(requests: List[Tuple[ClientProxy, SAServerMessageCarrier]]) -> SecureAggregationResultsAndFailures:
-        return parallel(_request, requests)
+    def sa_request(requests: List[Tuple[ClientProxy, SAServerMessageCarrier]], timeout: Optional[float] = 30.) \
+            -> SecureAggregationResultsAndFailures:
+        return parallel(_request, requests, timeout)
 
 
-def _request(client: GrpcClientProxy, ins: SAServerMessageCarrier):
-    return client, client.sa_request(ins)
+def _request(client: GrpcClientProxy, ins: SAServerMessageCarrier, timeout: Optional[float]):
+    return client, client.sa_request(ins, timeout)
 
 
-def parallel(fn, requests: List[Tuple[ClientProxy, SAServerMessageCarrier]]):
+def parallel(fn, requests: List[Tuple[ClientProxy, SAServerMessageCarrier]], timeout: Optional[float]):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [
-            executor.submit(lambda p: fn(*p), (client, ins))
+            executor.submit(lambda p: fn(*p), (client, ins, timeout))
             for client, ins in requests
         ]
         concurrent.futures.wait(futures)
@@ -46,5 +46,3 @@ def parallel(fn, requests: List[Tuple[ClientProxy, SAServerMessageCarrier]]):
             result = future.result()
             results.append(result)
     return results, failures
-
-
