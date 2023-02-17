@@ -31,13 +31,14 @@ class CifarClient(fl.client.NumPyClient):
         return 0., 1, {"accuracy": 0}
 
 
-def test_start_server(sample_num=2, min_num=2, share_num=2, threshold=2, vector_dimension=100000, dropout_value=0, num_rounds=1):
+def test_start_server(sample_num=2, min_num=2, share_num=2, threshold=2, vector_dimension=100000, dropout_value=0,
+                      num_rounds=1, test=1):
     fl.server.start_server(server_address="localhost:8080", config=ServerConfig(num_rounds, None, True),
                            strategy=SecAggFedAvg(fraction_fit=1, min_fit_clients=sample_num, min_available_clients=sample_num,
                                                  sec_agg_param_dict={"min_num": min_num,
                                                                      "share_num": share_num,
                                                                      "threshold": threshold,
-                                                                     "test": 1,
+                                                                     "test": test,
                                                                      "test_vector_dimension": vector_dimension,
                                                                      "test_dropout_value": dropout_value}))
 
@@ -49,7 +50,8 @@ def test_start_client(server_address: str,
                                  grpc_max_message_length=grpc_max_message_length, sa_protocol='secagg+')
 
 
-def test_start_simulation(sample_num=2, min_num=2, share_num=2, threshold=2, vector_dimension=100000, dropout_value=0, num_rounds=1):
+def test_start_simulation(sample_num=2, min_num=2, share_num=2, threshold=2, vector_dimension=100000, dropout_value=0,
+                          num_rounds=1, test=1):
     """Start a FL simulation."""
     # This will hold all the processes which we are going to create
     processes = []

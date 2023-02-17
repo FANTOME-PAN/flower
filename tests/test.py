@@ -7,7 +7,8 @@ pth = str(Path(__file__).parents[1]) + '\\src\\py'
 # print(f"add to path: {pth}")
 sys.path.append(pth)
 #r"C:\Users\MSI-NB\Source\Repos\FANTOME-PAN\flower\src\py"
-from flwr_crypto_cpp import create_shares, combine_shares
+# from flwr_crypto_cpp import create_shares, combine_shares
+from flwr.common.sa_primitives.secaggplus_primitives import create_shares, combine_shares
 from flwr.common.light_sec_agg import light_sec_agg_test
 from flwr.common.sec_agg_plus import sec_agg_test
 import random
@@ -24,8 +25,8 @@ print(quantized_weights)'''
 def test_combine_shares() -> None:
     x = timeit.default_timer()
     message = b"Quack quack!"
-    share_num = 1400
-    threshold = 700
+    share_num = 200
+    threshold = 100
     shares = create_shares(message, threshold, share_num)
     shares_collected = random.sample(shares, threshold)
     message_constructed = combine_shares(shares_collected)
@@ -37,7 +38,8 @@ def test_combine_shares() -> None:
 if __name__ == "__main__":
     
     #sec_agg_primitives_test.test_all()
-    #test_combine_shares()
+    test_combine_shares()
+    pass
     f = open("log.txt", "w")
     f.write("Starting real experiments\n")
     f.close()

@@ -15,7 +15,8 @@
 from flwr.common.parameter import ndarrays_to_parameters
 from flwr.common.typing import ShareKeysPacket, Scalar, Parameters, AskKeysRes
 from flwr.common.sa_primitives import secaggplus_primitives
-from flwr_crypto_cpp import create_shares
+# from flwr_crypto_cpp import create_shares
+from flwr.common.sa_primitives.secaggplus_primitives import create_shares
 from flwr.common.sa_primitives import quantize, public_key_to_bytes, generate_key_pairs, private_key_to_bytes, \
     bytes_to_public_key, generate_shared_key, encrypt, decrypt
 from flwr.common.sa_primitives.weight_arithmetics import *

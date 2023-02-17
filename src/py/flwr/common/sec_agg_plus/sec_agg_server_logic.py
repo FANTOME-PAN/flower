@@ -23,7 +23,8 @@ from flwr.common.sa_primitives import secaggplus_primitives
 from flwr.common.secure_aggregation import SAServerMessageCarrier, SecureAggregationFitRound
 from flwr.common.sa_primitives import reverse_quantize, generate_shared_key, bytes_to_private_key, bytes_to_public_key
 from flwr.common.sa_primitives.weight_arithmetics import *
-from flwr_crypto_cpp import combine_shares
+# from flwr_crypto_cpp import combine_shares
+from flwr.common.sa_primitives.secaggplus_primitives import combine_shares
 import numpy as np
 from flwr.common.timer import Timer
 

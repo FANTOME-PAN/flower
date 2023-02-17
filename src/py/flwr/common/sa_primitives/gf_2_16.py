@@ -25,7 +25,7 @@ class Operand:
     def __mul__(self, other):
         if self.num == 0 or other.num == 0:
             return 0
-        t = (int(logs[self.num]) + logs[other.num])
+        t = (int(logs[self.num]) + logs[other.num]) % 65536
         return Operand(exps[t])
 
     def __ne__(self, other):
