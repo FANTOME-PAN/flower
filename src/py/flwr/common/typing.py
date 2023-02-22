@@ -145,113 +145,23 @@ class DisconnectRes:
 
 
 @dataclass
-class SetupParamIns:
-    sec_agg_param_dict: Dict[str, Scalar]
+class ServerMessage:
+    """ServerMessage is a container used to hold one instruction message."""
+
+    get_properties_ins: Optional[GetPropertiesIns] = None
+    get_parameters_ins: Optional[GetParametersIns] = None
+    fit_ins: Optional[FitIns] = None
+    evaluate_ins: Optional[EvaluateIns] = None
 
 
 @dataclass
-class SetupParamRes:
-    pass
+class ClientMessage:
+    """ClientMessage is a container used to hold one result message."""
 
-
-@dataclass
-class AskKeysIns:
-    pass
-
-
-@dataclass
-class AskKeysRes:
-    """Ask Keys Stage Response from client to server"""
-
-    pk1: bytes
-    pk2: bytes
-
-
-@dataclass
-class ShareKeysIns:
-    public_keys_dict: Dict[int, AskKeysRes]
-
-
-@dataclass
-class ShareKeysPacket:
-    source: int
-    destination: int
-    ciphertext: bytes
-
-
-@dataclass
-class ShareKeysRes:
-    share_keys_res_list: List[ShareKeysPacket]
-
-
-@dataclass
-class AskVectorsIns:
-    ask_vectors_in_list: List[ShareKeysPacket]
-    fit_ins: FitIns
-
-
-@dataclass
-class AskVectorsRes:
-    parameters: Parameters
-
-
-@dataclass
-class UnmaskVectorsIns:
-    available_clients: List[int]
-    dropout_clients: List[int]
-
-
-@dataclass
-class UnmaskVectorsRes:
-    share_dict: Dict[int, bytes]
-
-
-@dataclass
-class LightSecAggSetupConfigIns:
-    sec_agg_cfg_dict: Dict[str, Scalar]
-
-
-@dataclass
-class LightSecAggSetupConfigRes:
-    pk: bytes
-
-
-@dataclass
-class AskEncryptedEncodedMasksIns:
-    public_keys_dict: Dict[int, LightSecAggSetupConfigRes]
-
-
-@dataclass
-class EncryptedEncodedMasksPacket:
-    source: int
-    destination: int
-    ciphertext: bytes
-
-
-@dataclass
-class AskEncryptedEncodedMasksRes:
-    packet_list: List[EncryptedEncodedMasksPacket]
-
-
-@dataclass
-class AskMaskedModelsIns:
-    packet_list: List[EncryptedEncodedMasksPacket]
-    fit_ins: FitIns
-
-
-@dataclass
-class AskMaskedModelsRes:
-    parameters: Parameters
-
-
-@dataclass
-class AskAggregatedEncodedMasksIns:
-    surviving_clients: List[int]
-
-
-@dataclass
-class AskAggregatedEncodedMasksRes:
-    aggregated_encoded_mask: Parameters
+    get_properties_res: Optional[GetPropertiesRes] = None
+    get_parameters_res: Optional[GetParametersRes] = None
+    fit_res: Optional[FitRes] = None
+    evaluate_res: Optional[EvaluateRes] = None
 
 
 @dataclass

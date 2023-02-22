@@ -14,6 +14,7 @@
 # ==============================================================================
 """gRPC-based Flower ClientProxy implementation."""
 
+
 from typing import Optional
 
 from typing import List, Tuple
@@ -24,16 +25,16 @@ from flwr.common.typing import AskKeysIns, AskVectorsIns, AskVectorsRes, SetupPa
     UnmaskVectorsIns, UnmaskVectorsRes, SAServerMessageCarrier, SAClientMessageCarrier
 import flwr.common.typing as ft
 from flwr.server.client_proxy import ClientProxy
-from flwr.server.grpc_server.grpc_bridge import GRPCBridge, InsWrapper, ResWrapper
+from flwr.server.grpc_server.grpc_bridge import GrpcBridge, InsWrapper, ResWrapper
 
 
 class GrpcClientProxy(ClientProxy):
-    """Flower client proxy which delegates over the network using gRPC."""
+    """Flower ClientProxy that uses gRPC to delegate tasks over the network."""
 
     def __init__(
         self,
         cid: str,
-        bridge: GRPCBridge,
+        bridge: GrpcBridge,
     ):
         super().__init__(cid)
         self.bridge = bridge

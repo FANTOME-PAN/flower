@@ -9,6 +9,9 @@ doc/source/_build
 flwr_logs
 .cache
 
+# Node.js
+node_modules
+
 # Flower Examples
 examples/**/dataset/**
 examples/**/dev/*.sh
