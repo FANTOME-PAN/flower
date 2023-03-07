@@ -17,6 +17,7 @@
 
 from typing import Tuple
 
+from flwr.client.abc_sa_client_wrapper import SAClientWrapper
 from flwr.client.client import (
     Client,
     maybe_call_evaluate,
@@ -67,6 +68,8 @@ def handle(
         return _fit(client, server_msg.fit_ins), 0, True
     if field == "evaluate_ins":
         return _evaluate(client, server_msg.evaluate_ins), 0, True
+    if server_msg.HasField("sa_msg_carrier"):
+        return _sa_respond(client, server_msg.sa_msg_carrier), 0, True
     raise UnknownServerMessage()
 
 
@@ -146,3 +149,18 @@ def _evaluate(client: Client, evaluate_msg: ServerMessage.EvaluateIns) -> Client
     # Serialize evaluate result
     evaluate_res_proto = serde.evaluate_res_to_proto(evaluate_res)
     return ClientMessage(evaluate_res=evaluate_res_proto)
+
+
+def _sa_respond(client: SAClientWrapper, msg: ServerMessage.SAMessageCarrier) -> ClientMessage:
+    try:
+        request = serde.sa_server_msg_carrier_from_proto(msg)
+        response = client.sa_respond(request)
+        response_msg = serde.sa_client_msg_carrier_to_proto(response)
+        return ClientMessage(sa_msg_carrier=response_msg)
+    except Exception as e:
+        return _sa_error(msg, e)
+
+
+def _sa_error(msg: ServerMessage.SAMessageCarrier, e: Exception) -> ClientMessage:
+    res = ClientMessage.SAMessageCarrier(identifier=msg.identifier, error_msg=e.args[0])
+    return ClientMessage(sa_msg_carrier=res)

@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1a\x66lwr/proto/transport.proto\x12\nflwr.proto\"9\n\x06Status\x12\x1e\n\x04\x63ode\x18\x01 \x01(\x0e\x32\x10.flwr.proto.Code\x12\x0f\n\x07message\x18\x02 \x01(\t\"2\n\nParameters\x12\x0f\n\x07tensors\x18\x01 \x03(\x0c\x12\x13\n\x0btensor_type\x18\x02 \x01(\t\"\xe1\x0b\n\rServerMessage\x12?\n\rreconnect_ins\x18\x01 \x01(\x0b\x32&.flwr.proto.ServerMessage.ReconnectInsH\x00\x12H\n\x12get_properties_ins\x18\x02 \x01(\x0b\x32*.flwr.proto.ServerMessage.GetPropertiesInsH\x00\x12H\n\x12get_parameters_ins\x18\x03 \x01(\x0b\x32*.flwr.proto.ServerMessage.GetParametersInsH\x00\x12\x33\n\x07\x66it_ins\x18\x04 \x01(\x0b\x32 .flwr.proto.ServerMessage.FitInsH\x00\x12=\n\x0c\x65valuate_ins\x18\x05 \x01(\x0b\x32%.flwr.proto.ServerMessage.EvaluateInsH\x00\x12\x44\n\x0esa_msg_carrier\x18\x06 \x01(\x0b\x32*.flwr.proto.ServerMessage.SAMessageCarrierH\x00\x1a\x1f\n\x0cReconnectIns\x12\x0f\n\x07seconds\x18\x01 \x01(\x03\x1a\x9d\x01\n\x10GetPropertiesIns\x12\x46\n\x06\x63onfig\x18\x01 \x03(\x0b\x32\x36.flwr.proto.ServerMessage.GetPropertiesIns.ConfigEntry\x1a\x41\n\x0b\x43onfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\x9d\x01\n\x10GetParametersIns\x12\x46\n\x06\x63onfig\x18\x01 \x03(\x0b\x32\x36.flwr.proto.ServerMessage.GetParametersIns.ConfigEntry\x1a\x41\n\x0b\x43onfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\xb5\x01\n\x06\x46itIns\x12*\n\nparameters\x18\x01 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12<\n\x06\x63onfig\x18\x02 \x03(\x0b\x32,.flwr.proto.ServerMessage.FitIns.ConfigEntry\x1a\x41\n\x0b\x43onfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\xbf\x01\n\x0b\x45valuateIns\x12*\n\nparameters\x18\x01 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12\x41\n\x06\x63onfig\x18\x02 \x03(\x0b\x32\x31.flwr.proto.ServerMessage.EvaluateIns.ConfigEntry\x1a\x41\n\x0b\x43onfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\xde\x02\n\x10SAMessageCarrier\x12\x12\n\nidentifier\x18\x01 \x01(\t\x12,\n\x0cndarray_list\x18\x02 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12N\n\nstr2scalar\x18\x03 \x03(\x0b\x32:.flwr.proto.ServerMessage.SAMessageCarrier.Str2scalarEntry\x12\x12\n\nbytes_list\x18\x04 \x03(\x0c\x12*\n\nparameters\x18\x05 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12\x31\n\x07\x66it_ins\x18\x06 \x01(\x0b\x32 .flwr.proto.ServerMessage.FitIns\x1a\x45\n\x0fStr2scalarEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x42\x05\n\x03msg\"\xda\x0c\n\rClientMessage\x12\x41\n\x0e\x64isconnect_res\x18\x01 \x01(\x0b\x32\'.flwr.proto.ClientMessage.DisconnectResH\x00\x12H\n\x12get_properties_res\x18\x02 \x01(\x0b\x32*.flwr.proto.ClientMessage.GetPropertiesResH\x00\x12H\n\x12get_parameters_res\x18\x03 \x01(\x0b\x32*.flwr.proto.ClientMessage.GetParametersResH\x00\x12\x33\n\x07\x66it_res\x18\x04 \x01(\x0b\x32 .flwr.proto.ClientMessage.FitResH\x00\x12=\n\x0c\x65valuate_res\x18\x05 \x01(\x0b\x32%.flwr.proto.ClientMessage.EvaluateResH\x00\x12\x44\n\x0esa_msg_carrier\x18\x06 \x01(\x0b\x32*.flwr.proto.ClientMessage.SAMessageCarrierH\x00\x1a\x33\n\rDisconnectRes\x12\"\n\x06reason\x18\x01 \x01(\x0e\x32\x12.flwr.proto.Reason\x1a\xcd\x01\n\x10GetPropertiesRes\x12\"\n\x06status\x18\x01 \x01(\x0b\x32\x12.flwr.proto.Status\x12N\n\nproperties\x18\x02 \x03(\x0b\x32:.flwr.proto.ClientMessage.GetPropertiesRes.PropertiesEntry\x1a\x45\n\x0fPropertiesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\x62\n\x10GetParametersRes\x12\"\n\x06status\x18\x01 \x01(\x0b\x32\x12.flwr.proto.Status\x12*\n\nparameters\x18\x02 \x01(\x0b\x32\x16.flwr.proto.Parameters\x1a\xf2\x01\n\x06\x46itRes\x12\"\n\x06status\x18\x01 \x01(\x0b\x32\x12.flwr.proto.Status\x12*\n\nparameters\x18\x02 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12\x14\n\x0cnum_examples\x18\x03 \x01(\x03\x12>\n\x07metrics\x18\x04 \x03(\x0b\x32-.flwr.proto.ClientMessage.FitRes.MetricsEntry\x1a\x42\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\xde\x01\n\x0b\x45valuateRes\x12\"\n\x06status\x18\x01 \x01(\x0b\x32\x12.flwr.proto.Status\x12\x0c\n\x04loss\x18\x02 \x01(\x02\x12\x14\n\x0cnum_examples\x18\x03 \x01(\x03\x12\x43\n\x07metrics\x18\x04 \x03(\x0b\x32\x32.flwr.proto.ClientMessage.EvaluateRes.MetricsEntry\x1a\x42\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\xf1\x02\n\x10SAMessageCarrier\x12\x12\n\nidentifier\x18\x01 \x01(\t\x12,\n\x0cndarray_list\x18\x02 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12N\n\nstr2scalar\x18\x03 \x03(\x0b\x32:.flwr.proto.ClientMessage.SAMessageCarrier.Str2scalarEntry\x12\x12\n\nbytes_list\x18\x04 \x03(\x0c\x12*\n\nparameters\x18\x05 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12\x31\n\x07\x66it_res\x18\x06 \x01(\x0b\x32 .flwr.proto.ClientMessage.FitRes\x12\x11\n\terror_msg\x18\x07 \x01(\t\x1a\x45\n\x0fStr2scalarEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x42\x05\n\x03msg\"i\n\x06Scalar\x12\x10\n\x06\x64ouble\x18\x01 \x01(\x01H\x00\x12\x10\n\x06sint64\x18\x08 \x01(\x12H\x00\x12\x0e\n\x04\x62ool\x18\r \x01(\x08H\x00\x12\x10\n\x06string\x18\x0e \x01(\tH\x00\x12\x0f\n\x05\x62ytes\x18\x0f \x01(\x0cH\x00\x42\x08\n\x06scalar*\x8d\x01\n\x04\x43ode\x12\x06\n\x02OK\x10\x00\x12\"\n\x1eGET_PROPERTIES_NOT_IMPLEMENTED\x10\x01\x12\"\n\x1eGET_PARAMETERS_NOT_IMPLEMENTED\x10\x02\x12\x17\n\x13\x46IT_NOT_IMPLEMENTED\x10\x03\x12\x1c\n\x18\x45VALUATE_NOT_IMPLEMENTED\x10\x04*[\n\x06Reason\x12\x0b\n\x07UNKNOWN\x10\x00\x12\r\n\tRECONNECT\x10\x01\x12\x16\n\x12POWER_DISCONNECTED\x10\x02\x12\x14\n\x10WIFI_UNAVAILABLE\x10\x03\x12\x07\n\x03\x41\x43K\x10\x04\x32S\n\rFlowerService\x12\x42\n\x04Join\x12\x19.flwr.proto.ClientMessage\x1a\x19.flwr.proto.ServerMessage\"\x00(\x01\x30\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1a\x66lwr/proto/transport.proto\x12\nflwr.proto\"9\n\x06Status\x12\x1e\n\x04\x63ode\x18\x01 \x01(\x0e\x32\x10.flwr.proto.Code\x12\x0f\n\x07message\x18\x02 \x01(\t\"2\n\nParameters\x12\x0f\n\x07tensors\x18\x01 \x03(\x0c\x12\x13\n\x0btensor_type\x18\x02 \x01(\t\"\xf1\x0b\n\rServerMessage\x12?\n\rreconnect_ins\x18\x01 \x01(\x0b\x32&.flwr.proto.ServerMessage.ReconnectInsH\x00\x12H\n\x12get_properties_ins\x18\x02 \x01(\x0b\x32*.flwr.proto.ServerMessage.GetPropertiesInsH\x00\x12H\n\x12get_parameters_ins\x18\x03 \x01(\x0b\x32*.flwr.proto.ServerMessage.GetParametersInsH\x00\x12\x33\n\x07\x66it_ins\x18\x04 \x01(\x0b\x32 .flwr.proto.ServerMessage.FitInsH\x00\x12=\n\x0c\x65valuate_ins\x18\x05 \x01(\x0b\x32%.flwr.proto.ServerMessage.EvaluateInsH\x00\x12\x44\n\x0esa_msg_carrier\x18\x06 \x01(\x0b\x32*.flwr.proto.ServerMessage.SAMessageCarrierH\x00\x1a\x1f\n\x0cReconnectIns\x12\x0f\n\x07seconds\x18\x01 \x01(\x03\x1a\x9d\x01\n\x10GetPropertiesIns\x12\x46\n\x06\x63onfig\x18\x01 \x03(\x0b\x32\x36.flwr.proto.ServerMessage.GetPropertiesIns.ConfigEntry\x1a\x41\n\x0b\x43onfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\x9d\x01\n\x10GetParametersIns\x12\x46\n\x06\x63onfig\x18\x01 \x03(\x0b\x32\x36.flwr.proto.ServerMessage.GetParametersIns.ConfigEntry\x1a\x41\n\x0b\x43onfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\xb5\x01\n\x06\x46itIns\x12*\n\nparameters\x18\x01 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12<\n\x06\x63onfig\x18\x02 \x03(\x0b\x32,.flwr.proto.ServerMessage.FitIns.ConfigEntry\x1a\x41\n\x0b\x43onfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\xbf\x01\n\x0b\x45valuateIns\x12*\n\nparameters\x18\x01 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12\x41\n\x06\x63onfig\x18\x02 \x03(\x0b\x32\x31.flwr.proto.ServerMessage.EvaluateIns.ConfigEntry\x1a\x41\n\x0b\x43onfigEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\xee\x02\n\x10SAMessageCarrier\x12\x12\n\nidentifier\x18\x01 \x01(\t\x12,\n\x0cndarray_list\x18\x02 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12N\n\nstr2scalar\x18\x03 \x03(\x0b\x32:.flwr.proto.ServerMessage.SAMessageCarrier.Str2scalarEntry\x12\x12\n\nbytes_list\x18\x04 \x03(\x0c\x12*\n\nparameters\x18\x05 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12\x31\n\x07\x66it_ins\x18\x06 \x01(\x0b\x32 .flwr.proto.ServerMessage.FitIns\x12\x0e\n\x06sa_msg\x18\x07 \x01(\t\x1a\x45\n\x0fStr2scalarEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x42\x05\n\x03msg\"\xea\x0c\n\rClientMessage\x12\x41\n\x0e\x64isconnect_res\x18\x01 \x01(\x0b\x32\'.flwr.proto.ClientMessage.DisconnectResH\x00\x12H\n\x12get_properties_res\x18\x02 \x01(\x0b\x32*.flwr.proto.ClientMessage.GetPropertiesResH\x00\x12H\n\x12get_parameters_res\x18\x03 \x01(\x0b\x32*.flwr.proto.ClientMessage.GetParametersResH\x00\x12\x33\n\x07\x66it_res\x18\x04 \x01(\x0b\x32 .flwr.proto.ClientMessage.FitResH\x00\x12=\n\x0c\x65valuate_res\x18\x05 \x01(\x0b\x32%.flwr.proto.ClientMessage.EvaluateResH\x00\x12\x44\n\x0esa_msg_carrier\x18\x06 \x01(\x0b\x32*.flwr.proto.ClientMessage.SAMessageCarrierH\x00\x1a\x33\n\rDisconnectRes\x12\"\n\x06reason\x18\x01 \x01(\x0e\x32\x12.flwr.proto.Reason\x1a\xcd\x01\n\x10GetPropertiesRes\x12\"\n\x06status\x18\x01 \x01(\x0b\x32\x12.flwr.proto.Status\x12N\n\nproperties\x18\x02 \x03(\x0b\x32:.flwr.proto.ClientMessage.GetPropertiesRes.PropertiesEntry\x1a\x45\n\x0fPropertiesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\x62\n\x10GetParametersRes\x12\"\n\x06status\x18\x01 \x01(\x0b\x32\x12.flwr.proto.Status\x12*\n\nparameters\x18\x02 \x01(\x0b\x32\x16.flwr.proto.Parameters\x1a\xf2\x01\n\x06\x46itRes\x12\"\n\x06status\x18\x01 \x01(\x0b\x32\x12.flwr.proto.Status\x12*\n\nparameters\x18\x02 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12\x14\n\x0cnum_examples\x18\x03 \x01(\x03\x12>\n\x07metrics\x18\x04 \x03(\x0b\x32-.flwr.proto.ClientMessage.FitRes.MetricsEntry\x1a\x42\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\xde\x01\n\x0b\x45valuateRes\x12\"\n\x06status\x18\x01 \x01(\x0b\x32\x12.flwr.proto.Status\x12\x0c\n\x04loss\x18\x02 \x01(\x02\x12\x14\n\x0cnum_examples\x18\x03 \x01(\x03\x12\x43\n\x07metrics\x18\x04 \x03(\x0b\x32\x32.flwr.proto.ClientMessage.EvaluateRes.MetricsEntry\x1a\x42\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x1a\x81\x03\n\x10SAMessageCarrier\x12\x12\n\nidentifier\x18\x01 \x01(\t\x12,\n\x0cndarray_list\x18\x02 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12N\n\nstr2scalar\x18\x03 \x03(\x0b\x32:.flwr.proto.ClientMessage.SAMessageCarrier.Str2scalarEntry\x12\x12\n\nbytes_list\x18\x04 \x03(\x0c\x12*\n\nparameters\x18\x05 \x01(\x0b\x32\x16.flwr.proto.Parameters\x12\x31\n\x07\x66it_res\x18\x06 \x01(\x0b\x32 .flwr.proto.ClientMessage.FitRes\x12\x0e\n\x06sa_msg\x18\x07 \x01(\t\x12\x11\n\terror_msg\x18\x08 \x01(\t\x1a\x45\n\x0fStr2scalarEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.flwr.proto.Scalar:\x02\x38\x01\x42\x05\n\x03msg\"i\n\x06Scalar\x12\x10\n\x06\x64ouble\x18\x01 \x01(\x01H\x00\x12\x10\n\x06sint64\x18\x08 \x01(\x12H\x00\x12\x0e\n\x04\x62ool\x18\r \x01(\x08H\x00\x12\x10\n\x06string\x18\x0e \x01(\tH\x00\x12\x0f\n\x05\x62ytes\x18\x0f \x01(\x0cH\x00\x42\x08\n\x06scalar*\x8d\x01\n\x04\x43ode\x12\x06\n\x02OK\x10\x00\x12\"\n\x1eGET_PROPERTIES_NOT_IMPLEMENTED\x10\x01\x12\"\n\x1eGET_PARAMETERS_NOT_IMPLEMENTED\x10\x02\x12\x17\n\x13\x46IT_NOT_IMPLEMENTED\x10\x03\x12\x1c\n\x18\x45VALUATE_NOT_IMPLEMENTED\x10\x04*[\n\x06Reason\x12\x0b\n\x07UNKNOWN\x10\x00\x12\r\n\tRECONNECT\x10\x01\x12\x16\n\x12POWER_DISCONNECTED\x10\x02\x12\x14\n\x10WIFI_UNAVAILABLE\x10\x03\x12\x07\n\x03\x41\x43K\x10\x04\x32S\n\rFlowerService\x12\x42\n\x04Join\x12\x19.flwr.proto.ClientMessage\x1a\x19.flwr.proto.ServerMessage\"\x00(\x01\x30\x01\x62\x06proto3')
 
 _CODE = DESCRIPTOR.enum_types_by_name['Code']
 Code = enum_type_wrapper.EnumTypeWrapper(_CODE)
@@ -284,16 +284,16 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _CLIENTMESSAGE_EVALUATERES_METRICSENTRY._serialized_options = b'8\001'
   _CLIENTMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._options = None
   _CLIENTMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._serialized_options = b'8\001'
-  _CODE._serialized_start=3398
-  _CODE._serialized_end=3539
-  _REASON._serialized_start=3541
-  _REASON._serialized_end=3632
+  _CODE._serialized_start=3430
+  _CODE._serialized_end=3571
+  _REASON._serialized_start=3573
+  _REASON._serialized_end=3664
   _STATUS._serialized_start=42
   _STATUS._serialized_end=99
   _PARAMETERS._serialized_start=101
   _PARAMETERS._serialized_end=151
   _SERVERMESSAGE._serialized_start=154
-  _SERVERMESSAGE._serialized_end=1659
+  _SERVERMESSAGE._serialized_end=1675
   _SERVERMESSAGE_RECONNECTINS._serialized_start=570
   _SERVERMESSAGE_RECONNECTINS._serialized_end=601
   _SERVERMESSAGE_GETPROPERTIESINS._serialized_start=604
@@ -313,33 +313,33 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _SERVERMESSAGE_EVALUATEINS_CONFIGENTRY._serialized_start=696
   _SERVERMESSAGE_EVALUATEINS_CONFIGENTRY._serialized_end=761
   _SERVERMESSAGE_SAMESSAGECARRIER._serialized_start=1302
-  _SERVERMESSAGE_SAMESSAGECARRIER._serialized_end=1652
-  _SERVERMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._serialized_start=1583
-  _SERVERMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._serialized_end=1652
-  _CLIENTMESSAGE._serialized_start=1662
-  _CLIENTMESSAGE._serialized_end=3288
-  _CLIENTMESSAGE_DISCONNECTRES._serialized_start=2080
-  _CLIENTMESSAGE_DISCONNECTRES._serialized_end=2131
-  _CLIENTMESSAGE_GETPROPERTIESRES._serialized_start=2134
-  _CLIENTMESSAGE_GETPROPERTIESRES._serialized_end=2339
-  _CLIENTMESSAGE_GETPROPERTIESRES_PROPERTIESENTRY._serialized_start=2270
-  _CLIENTMESSAGE_GETPROPERTIESRES_PROPERTIESENTRY._serialized_end=2339
-  _CLIENTMESSAGE_GETPARAMETERSRES._serialized_start=2341
-  _CLIENTMESSAGE_GETPARAMETERSRES._serialized_end=2439
-  _CLIENTMESSAGE_FITRES._serialized_start=2442
-  _CLIENTMESSAGE_FITRES._serialized_end=2684
-  _CLIENTMESSAGE_FITRES_METRICSENTRY._serialized_start=2618
-  _CLIENTMESSAGE_FITRES_METRICSENTRY._serialized_end=2684
-  _CLIENTMESSAGE_EVALUATERES._serialized_start=2687
-  _CLIENTMESSAGE_EVALUATERES._serialized_end=2909
-  _CLIENTMESSAGE_EVALUATERES_METRICSENTRY._serialized_start=2618
-  _CLIENTMESSAGE_EVALUATERES_METRICSENTRY._serialized_end=2684
-  _CLIENTMESSAGE_SAMESSAGECARRIER._serialized_start=2912
-  _CLIENTMESSAGE_SAMESSAGECARRIER._serialized_end=3281
-  _CLIENTMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._serialized_start=1583
-  _CLIENTMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._serialized_end=1652
-  _SCALAR._serialized_start=3290
-  _SCALAR._serialized_end=3395
-  _FLOWERSERVICE._serialized_start=3634
-  _FLOWERSERVICE._serialized_end=3717
+  _SERVERMESSAGE_SAMESSAGECARRIER._serialized_end=1668
+  _SERVERMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._serialized_start=1599
+  _SERVERMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._serialized_end=1668
+  _CLIENTMESSAGE._serialized_start=1678
+  _CLIENTMESSAGE._serialized_end=3320
+  _CLIENTMESSAGE_DISCONNECTRES._serialized_start=2096
+  _CLIENTMESSAGE_DISCONNECTRES._serialized_end=2147
+  _CLIENTMESSAGE_GETPROPERTIESRES._serialized_start=2150
+  _CLIENTMESSAGE_GETPROPERTIESRES._serialized_end=2355
+  _CLIENTMESSAGE_GETPROPERTIESRES_PROPERTIESENTRY._serialized_start=2286
+  _CLIENTMESSAGE_GETPROPERTIESRES_PROPERTIESENTRY._serialized_end=2355
+  _CLIENTMESSAGE_GETPARAMETERSRES._serialized_start=2357
+  _CLIENTMESSAGE_GETPARAMETERSRES._serialized_end=2455
+  _CLIENTMESSAGE_FITRES._serialized_start=2458
+  _CLIENTMESSAGE_FITRES._serialized_end=2700
+  _CLIENTMESSAGE_FITRES_METRICSENTRY._serialized_start=2634
+  _CLIENTMESSAGE_FITRES_METRICSENTRY._serialized_end=2700
+  _CLIENTMESSAGE_EVALUATERES._serialized_start=2703
+  _CLIENTMESSAGE_EVALUATERES._serialized_end=2925
+  _CLIENTMESSAGE_EVALUATERES_METRICSENTRY._serialized_start=2634
+  _CLIENTMESSAGE_EVALUATERES_METRICSENTRY._serialized_end=2700
+  _CLIENTMESSAGE_SAMESSAGECARRIER._serialized_start=2928
+  _CLIENTMESSAGE_SAMESSAGECARRIER._serialized_end=3313
+  _CLIENTMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._serialized_start=1599
+  _CLIENTMESSAGE_SAMESSAGECARRIER_STR2SCALARENTRY._serialized_end=1668
+  _SCALAR._serialized_start=3322
+  _SCALAR._serialized_end=3427
+  _FLOWERSERVICE._serialized_start=3666
+  _FLOWERSERVICE._serialized_end=3749
 # @@protoc_insertion_point(module_scope)

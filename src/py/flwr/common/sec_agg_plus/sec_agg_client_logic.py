@@ -30,9 +30,7 @@ def setup_param(client: SAClientWrapper, setup_param_dict: Dict[str, Scalar]) ->
     # Assigning parameter values to object fields
     sec_agg_param_dict = setup_param_dict
     client.sample_num = sec_agg_param_dict['sample_num']
-    client.sec_id = sec_agg_param_dict['sec_agg_id']
-    client.sec_agg_id = sec_agg_param_dict['sec_agg_id']
-    # client.id = sec_agg_param_dict['sec_agg_id']
+    client.sa_id = sec_agg_param_dict['sa_id']
     client.share_num = sec_agg_param_dict['share_num']
     client.threshold = sec_agg_param_dict['threshold']
     client.clipping_range = sec_agg_param_dict['clipping_range']
@@ -48,7 +46,7 @@ def setup_param(client: SAClientWrapper, setup_param_dict: Dict[str, Scalar]) ->
         client.test_dropout_value = sec_agg_param_dict['test_dropout_value']
     # End =================================================================
 
-    # key is the sec_agg_id of another client (int)
+    # key is the sa_id of another client (int)
     # value is the secret share we possess that contributes to the client's secret (bytes)
     client.b_share_dict = {}
     client.sk1_share_dict = {}
@@ -67,25 +65,28 @@ def ask_keys(client) -> Tuple[bytes, bytes]:
     return public_key_to_bytes(client.pk1), public_key_to_bytes(client.pk2)
 
 
-def share_keys(client, share_keys_dict: Dict[int, AskKeysRes]) -> List[ShareKeysPacket]:
+def share_keys(client, share_keys_dict: Dict[int, Tuple[str, str]]) -> List[ShareKeysPacket]:
     # Distribute shares for private mask seed and first private key
     # share_keys_dict:
-    client.public_keys_dict = share_keys_dict
+    new_dict: Dict[int, Tuple[bytes, bytes]] = {}
+    for k, (pk1, pk2) in share_keys_dict.items():
+        new_dict[int(k)] = (pk1.encode('ascii'), pk2.encode('ascii'))
+    client.public_keys_dict = new_dict
     # check size is larger than threshold
     if len(client.public_keys_dict) < client.threshold:
         raise Exception("Available neighbours number smaller than threshold")
 
     # check if all public keys received are unique
     pk_list: List[bytes] = []
-    for i in client.public_keys_dict.values():
-        pk_list.append(i.pk1)
-        pk_list.append(i.pk2)
+    for pk1, pk2 in client.public_keys_dict.values():
+        pk_list.append(pk1)
+        pk_list.append(pk2)
     if len(set(pk_list)) != len(pk_list):
         raise Exception("Some public keys are identical")
 
     # sanity check that own public keys are correct in dict
-    if client.public_keys_dict[client.sec_agg_id].pk1 != public_key_to_bytes(client.pk1) or \
-       client.public_keys_dict[client.sec_agg_id].pk2 != public_key_to_bytes(client.pk2):
+    if client.public_keys_dict[client.sa_id][0] != public_key_to_bytes(client.pk1) or \
+       client.public_keys_dict[client.sa_id][1] != public_key_to_bytes(client.pk2):
         raise Exception(
             "Own public keys are displayed in dict incorrectly, should not happen!")
 
@@ -103,19 +104,19 @@ def share_keys(client, share_keys_dict: Dict[int, AskKeysRes]) -> List[ShareKeys
     share_keys_res_list = []
 
     for idx, p in enumerate(client.public_keys_dict.items()):
-        client_sec_agg_id, client_public_keys = p
-        if client_sec_agg_id == client.sec_agg_id:
-            client.b_share_dict[client.sec_agg_id] = b_shares[idx]
-            client.sk1_share_dict[client.sec_agg_id] = sk1_shares[idx]
+        client_sa_id, client_public_keys = p
+        if client_sa_id == client.sa_id:
+            client.b_share_dict[client.sa_id] = b_shares[idx]
+            client.sk1_share_dict[client.sa_id] = sk1_shares[idx]
         else:
             shared_key = generate_shared_key(
-                client.sk2, bytes_to_public_key(client_public_keys.pk2))
-            client.shared_key_2_dict[client_sec_agg_id] = shared_key
+                client.sk2, bytes_to_public_key(client_public_keys[1]))
+            client.shared_key_2_dict[client_sa_id] = shared_key
             plaintext = secaggplus_primitives.share_keys_plaintext_concat(
-                client.sec_agg_id, client_sec_agg_id, b_shares[idx], sk1_shares[idx])
+                client.sa_id, client_sa_id, b_shares[idx], sk1_shares[idx])
             ciphertext = encrypt(shared_key, plaintext)
             share_keys_packet = ShareKeysPacket(
-                source=client.sec_agg_id, destination=client_sec_agg_id, ciphertext=ciphertext)
+                source=client.sa_id, destination=client_sa_id, ciphertext=ciphertext)
             share_keys_res_list.append(share_keys_packet)
 
     log(INFO, "SecAgg Stage 2 Completed: Sent Shares via Packets")
@@ -135,7 +136,7 @@ def ask_vectors(client, packet_list, fit_ins) -> Parameters:
         available_clients.append(source)
         destination = packet.destination
         ciphertext = packet.ciphertext
-        if destination != client.sec_agg_id:
+        if destination != client.sa_id:
             raise Exception(
                 "Received packet meant for another user. Not supposed to happen")
         shared_key = client.shared_key_2_dict[source]
@@ -165,7 +166,7 @@ def ask_vectors(client, packet_list, fit_ins) -> Parameters:
     '''
     # temporary code=========================================================
     if client.test == 1:
-        if client.sec_agg_id % 20 < client.test_dropout_value:
+        if client.sa_id % 20 < client.test_dropout_value:
             log(ERROR, "Force dropout due to testing!!")
             raise Exception("Force dropout due to testing")
         weights = weights_zero_generate(client.test_vector_shape)
@@ -201,10 +202,10 @@ def ask_vectors(client, packet_list, fit_ins) -> Parameters:
     for client_id in available_clients:
         # add pairwise mask
         shared_key = generate_shared_key(
-            client.sk1, bytes_to_public_key(client.public_keys_dict[client_id].pk1))
+            client.sk1, bytes_to_public_key(client.public_keys_dict[client_id][0]))
         # print('shared key length: %d' % len(shared_key))
         pairwise_mask = secaggplus_primitives.pseudo_rand_gen(shared_key, client.mod_range, dimensions_list)
-        if client.sec_agg_id > client_id:
+        if client.sa_id > client_id:
             quantized_weights = weights_addition(quantized_weights, pairwise_mask)
         else:
             quantized_weights = weights_subtraction(quantized_weights, pairwise_mask)

@@ -507,7 +507,8 @@ def sa_server_msg_carrier_to_proto(ins: typing.SAServerMessageCarrier)\
         str2scalar=str2scalar,
         bytes_list=ins.bytes_list,
         parameters=params,
-        fit_ins=fit_ins
+        fit_ins=fit_ins,
+        sa_msg=ins.sa_msg.to_json()
     )
 
 
@@ -523,7 +524,8 @@ def sa_server_msg_carrier_from_proto(proto: ServerMessage.SAMessageCarrier)\
         str2scalar=str2scalar,
         bytes_list=proto.bytes_list,
         parameters=params,
-        fit_ins=fit_ins
+        fit_ins=fit_ins,
+        sa_msg=typing.SAMessage(proto.sa_msg)
     )
 
 
@@ -546,7 +548,8 @@ def sa_client_msg_carrier_to_proto(ins: typing.SAClientMessageCarrier)\
         str2scalar=str2scalar,
         bytes_list=ins.bytes_list,
         parameters=params,
-        fit_res=fit_res
+        fit_res=fit_res,
+        sa_msg=ins.sa_msg.to_json()
     )
 
 
@@ -562,5 +565,6 @@ def sa_client_msg_carrier_from_proto(proto: ClientMessage.SAMessageCarrier)\
         str2scalar=str2scalar,
         bytes_list=proto.bytes_list,
         parameters=params,
-        fit_res=fit_res
+        fit_res=fit_res,
+        sa_msg=typing.SAMessage(proto.sa_msg)
     )

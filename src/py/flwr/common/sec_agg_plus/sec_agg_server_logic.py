@@ -17,7 +17,7 @@ import math
 from typing import Dict, List, Optional, Tuple
 from flwr.common.parameter import parameters_to_ndarrays, ndarrays_to_parameters
 from flwr.common.typing import AskKeysRes, AskVectorsRes, FitIns, FitRes, Parameters, Scalar, \
-    SetupParamRes, ShareKeysPacket, ShareKeysRes, UnmaskVectorsRes
+    SetupParamRes, ShareKeysPacket, ShareKeysRes, UnmaskVectorsRes, SAMessage
 from flwr.server.client_proxy import ClientProxy
 from flwr.common.sa_primitives import secaggplus_primitives
 from flwr.common.secure_aggregation import SAServerMessageCarrier, SecureAggregationFitRound
@@ -100,27 +100,17 @@ def sec_agg_fit_round(strategy: SecureAggregationFitRound, server, rnd: int
     tm.toc('s0_com')
     tm.tic('s0')
     # time consumption of stage 1 on the server side
-    public_keys_dict: Dict[int, AskKeysRes] = {}
+    public_keys_dict: Dict[int, Tuple[str, str]] = {}
     ask_keys_results = ask_keys_results_and_failures[0]
     if len(ask_keys_results) < sec_agg_param_dict['min_num']:
         raise Exception("Not enough available clients after ask keys stage")
     share_keys_clients: Dict[int, ClientProxy] = {}
 
     # Build public keys dict
-    # tmp_map = dict(ask_keys_results)
     for client, result in ask_keys_results:
         idx = proxy2id[client]
-        public_keys_dict[idx] = result
+        public_keys_dict[idx] = (result.pk1, result.pk2)
         share_keys_clients[idx] = client
-    # for idx, client in ask_keys_clients.items():
-    #     if client in [result[0] for result in ask_keys_results]:
-    #         pos = [result[0] for result in ask_keys_results].index(client)
-    #         public_keys_dict[idx] = ask_keys_results[pos][1]
-    #         share_keys_clients[idx] = client
-    # key = tmp_map.get(client, None)
-    # if key is not None:
-    #     public_keys_dict[idx] = key
-    #     share_keys_clients[idx] = client
     tm.toc('s0')
 
     # === Stage 1: Share Keys ===
@@ -147,11 +137,6 @@ def sec_agg_fit_round(strategy: SecureAggregationFitRound, server, rnd: int
             ask_vectors_clients[idx] = client
             packet_list = share_keys_results[pos][1].share_keys_res_list
             total_packet_list += packet_list
-        # o = tmp_map.get(client, None)
-        # if o is not None:
-        #     ask_vectors_clients[idx] = client
-        #     total_packet_list.extend(o.share_keys_res_list)
-
     for idx in ask_vectors_clients.keys():
         forward_packet_list_dict[idx] = []
     # forward_packet_list_dict = dict(zip(ask_vectors_clients.keys(), [] * len(ask_vectors_clients.keys())))
@@ -239,11 +224,13 @@ def sec_agg_fit_round(strategy: SecureAggregationFitRound, server, rnd: int
                     if i != 0 and ((i + client_id) % sec_agg_param_dict['sample_num']) in ask_vectors_clients.keys():
                         neighbor_list.append((i + client_id) %
                                              sec_agg_param_dict['sample_num'])
-
+            for k in public_keys_dict:
+                pk1, pk2 = public_keys_dict[k]
+                public_keys_dict[k] = pk1.encode('ascii'), pk2.encode('ascii')
             for neighbor_id in neighbor_list:
                 shared_key = generate_shared_key(
                     bytes_to_private_key(secret),
-                    bytes_to_public_key(public_keys_dict[neighbor_id].pk1))
+                    bytes_to_public_key(public_keys_dict[neighbor_id][0]))
                 tm.tic('mask_gen')
                 pairwise_mask = secaggplus_primitives.pseudo_rand_gen(
                     shared_key, sec_agg_param_dict['mod_range'], weights_shape(masked_vector))
@@ -339,55 +326,48 @@ def process_sec_agg_param_dict(sec_agg_param_dict: Dict[str, Scalar]) -> Dict[st
     )
 
     assert (
-        sec_agg_param_dict['sample_num'] >= 2
-        and sec_agg_param_dict['min_num'] >= 2
-        and sec_agg_param_dict['sample_num'] >= sec_agg_param_dict['min_num']
-        and sec_agg_param_dict['share_num'] <= sec_agg_param_dict['sample_num']
-        and sec_agg_param_dict['threshold'] <= sec_agg_param_dict['share_num']
-        and sec_agg_param_dict['threshold'] >= 2
-        and (sec_agg_param_dict['share_num'] % 2 == 1 or sec_agg_param_dict['share_num'] == sec_agg_param_dict[
+            sec_agg_param_dict['sample_num'] >= 2
+            and sec_agg_param_dict['min_num'] >= 2
+            and sec_agg_param_dict['sample_num'] >= sec_agg_param_dict['min_num']
+            and sec_agg_param_dict['share_num'] <= sec_agg_param_dict['sample_num']
+            and sec_agg_param_dict['threshold'] <= sec_agg_param_dict['share_num']
+            and sec_agg_param_dict['threshold'] >= 2
+            and (sec_agg_param_dict['share_num'] % 2 == 1 or sec_agg_param_dict['share_num'] == sec_agg_param_dict[
         'sample_num'])
-        and sec_agg_param_dict['target_range'] * sec_agg_param_dict['sample_num'] * sec_agg_param_dict[
-            'max_weights_factor'] <= sec_agg_param_dict['mod_range']
+            and sec_agg_param_dict['target_range'] * sec_agg_param_dict['sample_num'] * sec_agg_param_dict[
+                'max_weights_factor'] <= sec_agg_param_dict['mod_range']
     ), "SecAgg parameters not accepted"
     return sec_agg_param_dict
 
 
 def setup_param(
-    strategy: SecureAggregationFitRound,
-    clients: Dict[int, ClientProxy],
-    sec_agg_param_dict: Dict[str, Scalar]
-) -> SetupParamResultsAndFailures:
-    def sec_agg_param_dict_with_sec_agg_id(sec_agg_param_dict: Dict[str, Scalar], sec_agg_id: int):
-        new_sec_agg_param_dict = sec_agg_param_dict.copy()
-        new_sec_agg_param_dict[
-            'sec_agg_id'] = sec_agg_id
-        return new_sec_agg_param_dict
+        strategy: SecureAggregationFitRound,
+        clients: Dict[int, ClientProxy],
+        sec_agg_param_dict: Dict[str, Scalar]
+) -> Tuple[List[Tuple[ClientProxy, SAMessage]], List[BaseException]]:
+    def fn(d: Dict[str, Scalar], sa_id: int):
+        ret = d.copy()
+        ret['sa_id'] = sa_id
+        return ret
 
     results, failures = strategy.sa_request([
-        (
-            c,
-            SAServerMessageCarrier(
-                identifier='0',
-                str2scalar=sec_agg_param_dict_with_sec_agg_id(
-                    sec_agg_param_dict, idx),
-            )
-        ) for idx, c in clients.items()
+        (proxy,
+         SAServerMessageCarrier(identifier='0', str2scalar=fn(sec_agg_param_dict, idx)))
+        for idx, proxy in clients.items()
     ])
-    results = [(c, AskKeysRes(pk1=msg.bytes_list[0], pk2=msg.bytes_list[1])) for c, msg in results]
+    results = [(proxy, msg.sa_msg) for proxy, msg in results]
     return results, failures
 
 
 def share_keys(strategy: SecureAggregationFitRound, graph: Dict[int, List[int]], clients: Dict[int, ClientProxy],
-               public_keys_dict: Dict[int, AskKeysRes]) -> ShareKeysResultsAndFailures:
+               public_keys_dict: Dict[int, Tuple[str, str]]) \
+        -> Tuple[List[Tuple[ClientProxy, SAMessage]], List[BaseException]]:
     results, failures = strategy.sa_request([share_keys_client(c, idx, graph, public_keys_dict)
                                              for idx, c in clients.items()])
     new_results = []
     for client, result in results:
-        lst = [ShareKeysPacket(source, destination, ciphertext)
-               for source, destination, ciphertext in zip(result.numpy_ndarray_list[0],
-                                                          result.numpy_ndarray_list[1],
-                                                          result.bytes_list)]
+        lst = [ShareKeysPacket(source, destination, ciphertext.encode('ascii'))
+               for source, destination, ciphertext in result.sa_msg.packets]
         new_results.append((
             client, ShareKeysRes(lst)
         ))
@@ -395,17 +375,11 @@ def share_keys(strategy: SecureAggregationFitRound, graph: Dict[int, List[int]],
 
 
 def share_keys_client(client: ClientProxy, idx: int, graph: Dict[int, List[int]],
-                      public_keys_dict: Dict[int, AskKeysRes],
+                      public_keys_dict: Dict[int, SAMessage],
                       ) -> Tuple[ClientProxy, SAServerMessageCarrier]:
-    local_dict: Dict[str, AskKeysRes] = {}
-    key_set = public_keys_dict.keys()
-    for k in graph[idx]:
-        if k in key_set:
-            v = public_keys_dict[k]
-            local_dict[str(k) + '_pk1'] = v.pk1
-            local_dict[str(k) + '_pk2'] = v.pk2
-
-    return client, SAServerMessageCarrier(identifier='1', str2scalar=local_dict)
+    sa_msg = SAMessage()
+    sa_msg.public_keys_dict = dict((k, public_keys_dict[k]) for k in graph[idx] if k in public_keys_dict)
+    return client, SAServerMessageCarrier(identifier='1', sa_msg=sa_msg)
 
 
 def ask_vectors(strategy: SecureAggregationFitRound, clients: Dict[int, ClientProxy],
@@ -419,28 +393,32 @@ def ask_vectors(strategy: SecureAggregationFitRound, clients: Dict[int, ClientPr
 
 
 def ask_vectors_client(client: ClientProxy, forward_packet_list: List[ShareKeysPacket], fit_ins: FitIns) \
-    -> Tuple[ClientProxy, SAServerMessageCarrier]:
-    source_lst = np.array([o.source for o in forward_packet_list])
-    destination_lst = np.array([o.destination for o in forward_packet_list])
-    ciphertext_lst = [o.ciphertext for o in forward_packet_list]
-    msg = SAServerMessageCarrier('2', numpy_ndarray_list=[source_lst, destination_lst],
-                                 bytes_list=ciphertext_lst, fit_ins=fit_ins)
+        -> Tuple[ClientProxy, SAServerMessageCarrier]:
+    # source_lst = np.array([o.source for o in forward_packet_list])
+    # destination_lst = np.array([o.destination for o in forward_packet_list])
+    # ciphertext_lst = [o.ciphertext for o in forward_packet_list]
+    sa_msg = SAMessage()
+    sa_msg.packets = [(o.source, o.destination, o.ciphertext.decode('ascii')) for o in forward_packet_list]
+    msg = SAServerMessageCarrier('2', fit_ins=fit_ins, sa_msg=sa_msg)
     return client, msg
 
 
 def unmask_vectors(strategy: SecureAggregationFitRound, clients: Dict[int, ClientProxy],
                    dropout_clients: Dict[int, ClientProxy], graph: Dict[int, List[int]]) \
         -> UnmaskVectorsResultsAndFailures:
+    def make_message(_actives, _dropouts):
+        ret = SAMessage()
+        ret.actives = _actives
+        ret.dropouts = _dropouts
+        return ret
+
     actives = set(clients.keys())
     dropouts = set(dropout_clients.keys())
 
     results, failures = strategy.sa_request([
         (client, SAServerMessageCarrier(
             identifier='3',
-            numpy_ndarray_list=[
-                np.array(list(actives.intersection(graph[idx]))),
-                np.array(list(dropouts.intersection(graph[idx])), dtype=np.int32),
-            ]
+            sa_msg=make_message(list(actives.intersection(graph[idx])), list(dropouts.intersection(graph[idx])))
         ))
         for idx, client in clients.items()
     ])

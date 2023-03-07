@@ -14,7 +14,6 @@
 # ==============================================================================
 """Flower type definitions."""
 
-
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -164,6 +163,34 @@ class ClientMessage:
     evaluate_res: Optional[EvaluateRes] = None
 
 
+
+import json
+
+
+class SAMessage:
+    def __init__(self, json_string: str = None):
+        if json_string is not None:
+            self.from_json(json_string)
+
+    def to_json(self):
+        # stat = self.__dict__.copy()
+        # _rebuild = []
+        # for k in stat:
+        #     if isinstance(stat[k], SAMessage):
+        #         _rebuild.append(k)
+        #         stat[k] = stat[k].to_json()
+        # stat['_rebuild'] = _rebuild
+        # return json.dumps(stat)
+        return json.dumps(self.__dict__)
+
+    def from_json(self, json_string: str):
+        self.__dict__.update(json.loads(json_string))
+        # if '_rebuild' in self.__dict__:
+        #     for k in self._rebuild:
+        #         self.__dict__[k] = SAMessage(self.__dict__[k])
+        return self
+
+
 @dataclass
 class SAServerMessageCarrier:
     identifier: str
@@ -172,6 +199,7 @@ class SAServerMessageCarrier:
     bytes_list: Optional[List[bytes]] = None
     parameters: Optional[Parameters] = None
     fit_ins: Optional[FitIns] = None
+    sa_msg: SAMessage = SAMessage()
 
 
 @dataclass
@@ -182,3 +210,81 @@ class SAClientMessageCarrier:
     bytes_list: Optional[List[bytes]] = None
     parameters: Optional[Parameters] = None
     fit_res: Optional[FitRes] = None
+    sa_msg: SAMessage = SAMessage()
+
+
+@dataclass
+class ShareKeysPacket:
+    source: int
+    destination: int
+    ciphertext: bytes
+
+
+@dataclass
+class AskKeysRes:
+    pk1: bytes
+    pk2: bytes
+
+
+@dataclass
+class SetupParamIns:
+    sec_agg_param_dict: Dict[str, Scalar]
+
+
+@dataclass
+class SetupParamRes:
+    pass
+
+
+@dataclass
+class AskKeysIns:
+    pass
+
+
+@dataclass
+class AskKeysRes:
+    """Ask Keys Stage Response from client to server"""
+
+    pk1: bytes
+    pk2: bytes
+
+
+@dataclass
+class ShareKeysIns:
+    public_keys_dict: Dict[int, AskKeysRes]
+
+
+@dataclass
+class ShareKeysPacket:
+    source: int
+    destination: int
+    ciphertext: bytes
+
+
+@dataclass
+class ShareKeysRes:
+    share_keys_res_list: List[ShareKeysPacket]
+
+
+@dataclass
+class AskVectorsIns:
+    ask_vectors_in_list: List[ShareKeysPacket]
+    fit_ins: FitIns
+
+
+@dataclass
+class AskVectorsRes:
+    parameters: Parameters
+
+
+@dataclass
+class UnmaskVectorsIns:
+    available_clients: List[int]
+    dropout_clients: List[int]
+
+
+@dataclass
+class UnmaskVectorsRes:
+    share_dict: Dict[int, bytes]
+
+

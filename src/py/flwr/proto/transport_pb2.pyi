@@ -232,6 +232,7 @@ class ServerMessage(google.protobuf.message.Message):
         BYTES_LIST_FIELD_NUMBER: builtins.int
         PARAMETERS_FIELD_NUMBER: builtins.int
         FIT_INS_FIELD_NUMBER: builtins.int
+        SA_MSG_FIELD_NUMBER: builtins.int
         identifier: typing.Text
         @property
         def ndarray_list(self) -> global___Parameters: ...
@@ -243,6 +244,7 @@ class ServerMessage(google.protobuf.message.Message):
         def parameters(self) -> global___Parameters: ...
         @property
         def fit_ins(self) -> global___ServerMessage.FitIns: ...
+        sa_msg: typing.Text
         def __init__(self,
             *,
             identifier: typing.Text = ...,
@@ -251,9 +253,10 @@ class ServerMessage(google.protobuf.message.Message):
             bytes_list: typing.Optional[typing.Iterable[builtins.bytes]] = ...,
             parameters: typing.Optional[global___Parameters] = ...,
             fit_ins: typing.Optional[global___ServerMessage.FitIns] = ...,
+            sa_msg: typing.Text = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["fit_ins",b"fit_ins","ndarray_list",b"ndarray_list","parameters",b"parameters"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["bytes_list",b"bytes_list","fit_ins",b"fit_ins","identifier",b"identifier","ndarray_list",b"ndarray_list","parameters",b"parameters","str2scalar",b"str2scalar"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["bytes_list",b"bytes_list","fit_ins",b"fit_ins","identifier",b"identifier","ndarray_list",b"ndarray_list","parameters",b"parameters","sa_msg",b"sa_msg","str2scalar",b"str2scalar"]) -> None: ...
 
     RECONNECT_INS_FIELD_NUMBER: builtins.int
     GET_PROPERTIES_INS_FIELD_NUMBER: builtins.int
@@ -444,6 +447,7 @@ class ClientMessage(google.protobuf.message.Message):
         BYTES_LIST_FIELD_NUMBER: builtins.int
         PARAMETERS_FIELD_NUMBER: builtins.int
         FIT_RES_FIELD_NUMBER: builtins.int
+        SA_MSG_FIELD_NUMBER: builtins.int
         ERROR_MSG_FIELD_NUMBER: builtins.int
         identifier: typing.Text
         @property
@@ -456,6 +460,7 @@ class ClientMessage(google.protobuf.message.Message):
         def parameters(self) -> global___Parameters: ...
         @property
         def fit_res(self) -> global___ClientMessage.FitRes: ...
+        sa_msg: typing.Text
         error_msg: typing.Text
         def __init__(self,
             *,
@@ -465,10 +470,11 @@ class ClientMessage(google.protobuf.message.Message):
             bytes_list: typing.Optional[typing.Iterable[builtins.bytes]] = ...,
             parameters: typing.Optional[global___Parameters] = ...,
             fit_res: typing.Optional[global___ClientMessage.FitRes] = ...,
+            sa_msg: typing.Text = ...,
             error_msg: typing.Text = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["fit_res",b"fit_res","ndarray_list",b"ndarray_list","parameters",b"parameters"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["bytes_list",b"bytes_list","error_msg",b"error_msg","fit_res",b"fit_res","identifier",b"identifier","ndarray_list",b"ndarray_list","parameters",b"parameters","str2scalar",b"str2scalar"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["bytes_list",b"bytes_list","error_msg",b"error_msg","fit_res",b"fit_res","identifier",b"identifier","ndarray_list",b"ndarray_list","parameters",b"parameters","sa_msg",b"sa_msg","str2scalar",b"str2scalar"]) -> None: ...
 
     DISCONNECT_RES_FIELD_NUMBER: builtins.int
     GET_PROPERTIES_RES_FIELD_NUMBER: builtins.int
