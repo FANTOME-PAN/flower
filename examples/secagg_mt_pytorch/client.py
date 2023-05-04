@@ -1,5 +1,6 @@
 import flwr as fl
 
+from client_workflow import FitEvalClientWorkflow, SecAggClientWorkFlow
 from task import (
     Net,
     DEVICE,
@@ -17,7 +18,7 @@ trainloader, testloader = load_data()
 
 
 # Define Flower client
-class FlowerClient(fl.client.NumPyClient):
+class FlowerClient(fl.client.NumPyClient, SecAggClientWorkFlow):
     def fit(self, parameters, config):
         set_parameters(net, parameters)
         train(net, trainloader, epochs=1)

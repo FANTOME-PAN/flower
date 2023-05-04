@@ -1,14 +1,9 @@
-from typing import List, Union, Dict, Tuple
-import random
-import time
+from abc import abstractmethod
 from dataclasses import dataclass
-from flwr.driver import Driver
-from flwr.common import ndarrays_to_parameters, serde, Parameters, Scalar
-from flwr.proto import driver_pb2, task_pb2, node_pb2, transport_pb2
+from typing import List, Union, Dict, Generator
 
-from task import Net, get_parameters, set_parameters
-import numpy as np
-import user_facing_messages as usr
+import user_messages as usr
+from flwr.common import Parameters
 
 
 @dataclass
@@ -16,10 +11,37 @@ class Strategy:
     parameters: Parameters
 
 
-def workflow_without_sec_agg(strategy: Strategy):
+class FlowerWorkflowGenerator:
+    def __init__(self, strategy: Strategy, num_rounds=1e9):
+        self.num_rounds = num_rounds
+        self.strategy = strategy
+
+    @abstractmethod
+    def configure_tasks(self, node_messages: Union[List[int], Dict[int, usr.Task]]) \
+            -> Dict[int, usr.Task]:
+        ...
+
+    @abstractmethod
+    def aggregate_tasks(self, node_messages: Dict[int, usr.Task]):
+        ...
+
+    def generate_workflow(self) \
+            -> Generator[Dict[int, usr.Task], Union[List[int], Dict[int, usr.Task]], None]:
+        node_messages = yield
+        for _ in range(self.num_rounds):
+            ins_dict = self.configure_tasks(node_messages)
+            if ins_dict is None:
+                break
+            yield ins_dict
+            node_messages = yield
+            self.aggregate_tasks(node_messages)
+
+
+def workflow_without_sec_agg(strategy: Strategy) \
+        -> Generator[Dict[int, usr.Task], Union[List[int], Dict[int, usr.Task]], None]:
     # configure fit
     sampled_node_ids: List[int] = yield
-    fit_ins = usr.FitInstruction(parameters=strategy.parameters, config={})
+    fit_ins = usr.FitIns(parameters=strategy.parameters, config={})
     task = usr.Task(legacy_server_message=usr.ServerMessage(fit_ins=fit_ins))
     yield {node_id: task for node_id in sampled_node_ids}
 
@@ -29,7 +51,8 @@ def workflow_without_sec_agg(strategy: Strategy):
     # todo
 
 
-def workflow_with_sec_agg(strategy: Strategy):
+def workflow_with_sec_agg(strategy: Strategy) \
+        -> Generator[Dict[int, usr.Task], Union[List[int], Dict[int, usr.Task]], None]:
     sampled_node_ids: List[int] = yield
 
     yield request_keys_ins(sampled_node_ids)

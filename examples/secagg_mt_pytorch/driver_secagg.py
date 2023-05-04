@@ -7,7 +7,7 @@ from flwr.driver import Driver
 from flwr.proto import driver_pb2, task_pb2, node_pb2
 from task import Net, get_parameters
 from workflows import workflow_with_sec_agg
-import user_facing_messages as usr
+import user_messages as usr
 
 
 def user_task_to_proto(task: usr.Task) -> task_pb2.Task:
@@ -85,8 +85,12 @@ for server_round in range(num_rounds):
 
     node_responses = sampled_node_ids
 
-    for _ in workflow:
-        ins: Dict[int, usr.Task] = workflow.send(node_responses)
+    while True:
+        try:
+            next(workflow)
+            ins: Dict[int, usr.Task] = workflow.send(node_responses)
+        except StopIteration:
+            break
         task_ins_list: List[task_pb2.TaskIns] = []
         # Schedule a task for all sampled nodes
         for node_id, user_task in ins.items():
