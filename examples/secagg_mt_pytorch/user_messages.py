@@ -56,3 +56,4 @@ class Task:
     legacy_server_message: Optional[ServerMessage] = None
     legacy_client_message: Optional[ClientMessage] = None
     secure_aggregation_message: Optional[SecureAggregationMessage] = None
+    new_message_flag = True

@@ -54,17 +54,17 @@ def workflow_without_sec_agg(strategy: Strategy) \
 def workflow_with_sec_agg(strategy: Strategy) \
         -> Generator[Dict[int, usr.Task], Union[List[int], Dict[int, usr.Task]], None]:
     sampled_node_ids: List[int] = yield
-
     yield request_keys_ins(sampled_node_ids)
-    node_messages: Dict[int, usr.Task] = yield
 
+    node_messages: Dict[int, usr.Task] = yield
     yield share_keys_ins(node_messages)
-    node_messages: Dict[int, usr.Task] = yield
 
+    node_messages: Dict[int, usr.Task] = yield
     yield request_parameters_ins(node_messages)
-    node_messages: Dict[int, usr.Task] = yield
 
+    node_messages: Dict[int, usr.Task] = yield
     yield request_key_shares_ins(sampled_node_ids, node_messages)
+
     node_messages: Dict[int, usr.Task] = yield
     print(f'trying to decrypt and update parameters...')
     # todo
