@@ -17,6 +17,15 @@ def register_handler(message_type: str):
     return register
 
 
+def register_handler_class(client_class, *message_types: str):
+    def register(func):
+        __reg.functions.setdefault(message_types, []).append(func)
+        __reg.type2handlers = None
+        return func
+
+    return register
+
+
 def get_handlers(cls_type: type) -> Dict[str, str]:
     if __reg.type2handlers is None:
         type2handlers: Dict[type, set] = {}
